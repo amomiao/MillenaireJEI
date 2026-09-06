@@ -1,7 +1,7 @@
 # Human Claw Runtime
 ## 总之先查阅可能有用的接口
-### Buy&Sell from Village 千年交易
-* 页签:`千年售出`、`千年购入`
+### Buy&Sell from Village 千年村庄交易
+* 页签:`千年村庄出售`、`千年村庄购入`
 * `org.millenaire.building.BuildingPlan`
   * `public List<Shop> shops`: 存储当前建筑包含的商店定义。可遍历获取该建筑交易的物品列表、基础收购/出售价格。
 * `org.millenaire.building.BuildingPlanSet$StartingGood`
@@ -10,8 +10,8 @@
   * `public int sellPrice`: 村庄收购玩家物品的价格。
 * `org.millenaire.building.GoodAvailabilityHelper`
   * `public static boolean isItemSoldAt(Culture culture, Item item)`: 便捷校验方法，用于过滤 JEI 交易配方。
-### Villager Crafting 千年工艺
-* 页签:`千年烹饪`、`千年工艺`
+### Villager Crafting 千年村庄工艺
+* 页签:`千年村庄烹饪`、`千年村庄工艺`
 * `org.millenaire.block.FirePitBlockEntity`
   * `public static boolean isFirePitBurnable(ItemStack stack)`: 判定火塘有效燃料/原料。
   * `public static int getCookTime(ItemStack stack)`: 提取火塘加工耗时（Ticks）。
@@ -21,7 +21,7 @@
   * 湿砖风干成干砖的状态变化逻辑，对应 JEI "自然风干" 分类。
 * `org.millenaire.block.BlockSilkWorm` & `org.millenaire.block.BlockSnailSoil`
   * 蚕架与蜗牛土方块的时序产出项（蚕丝、蜗牛）。
-### Villager Slaugtering 千年屠宰[先不做]
+### Villager Slaugtering 千年屠宰[最后做]
 * 页签:`千年养殖`
 * `org.millenaire.block.mock.AnimalSpawnType`
   * 枚举类：定义建筑内标记的动物类型（如 `COW`, `PIG`, `CHICKEN`, `SHEEP` 等）。
@@ -48,6 +48,12 @@
    * org.millenaire.item.MillItems货币铜钱（Denier Bronze）、银钱（Denier Silver）、金钱（Denier Gold）的 Item 静态引用
 
 2. 工艺与被动生产模块 (Villager Crafting)
+   * org.millenaire.goal.gathering.handler.CraftingHandler
+   * org.millenaire.goal.gathering.GatheringType
+   * org.millenaire.goal.gathering.GatheringTypeLoader
+   * org.millenaire.goal.GoalRegistry
+   * org.millenaire.goal.gathering.handler.AbstractGatheringHandler
+   * 
    * org.millenaire.building.BuildingPlanSet$LevelDef：重点查看 abstractedProduction 字段的数据结构及其定义方式。
    * org.millenaire.building.InvItem：查看如何将 Millénaire 的 InvItem 安全还原为标准 ItemStack（含 Count 与 NBT 处理）。
    * org.millenaire.block.FirePitBlockEntity：查看火塘配方判定函数 isFirePitBurnable 及烹饪耗时 getCookTime 的代码实现。

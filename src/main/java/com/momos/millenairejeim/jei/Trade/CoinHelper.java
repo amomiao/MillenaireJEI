@@ -1,4 +1,4 @@
-package com.momos.millenairejeim.jei;
+package com.momos.millenairejeim.jei.Trade;
 
 import net.minecraft.world.item.ItemStack;
 import org.millenaire.commerce.TradeGood;

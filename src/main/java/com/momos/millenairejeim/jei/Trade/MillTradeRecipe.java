@@ -1,4 +1,4 @@
-package com.momos.millenairejeim.jei;
+package com.momos.millenairejeim.jei.Trade;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +13,7 @@ import java.util.List;
  * JEI 交易配方数据模型。
  * 包装了 {@link TradeGood}，并承载文化 ID、建筑/商店 ID 以及交易类型（出售/收购/可选收购）。
  */
-public class TradeRecipe {
+public class MillTradeRecipe {
     public enum TradeType {
         VILLAGE_SELLS,   // 村庄售出（玩家购买）
         VILLAGE_BUYS,    // 村庄购入（玩家出售）
@@ -27,7 +27,7 @@ public class TradeRecipe {
     private final Ingredient itemIngredient;
     private final List<ItemStack> coinStacks;
 
-    public TradeRecipe(ResourceLocation cultureId, String shopId, TradeGood tradeGood, TradeType tradeType) {
+    public MillTradeRecipe(ResourceLocation cultureId, String shopId, TradeGood tradeGood, TradeType tradeType) {
         this.cultureId = cultureId;
         this.shopId = shopId;
         this.tradeGood = tradeGood;
