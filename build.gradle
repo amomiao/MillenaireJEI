@@ -1,0 +1,232 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // 引入官方 OW2 ASM 库，解决 JDK 21 强模块化限制
+        classpath 'org.ow2.asm:asm:9.7'
+    }
+}
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'idea'
+}
+tasks.named('wrapper', Wrapper).configure {distributionType = Wrapper.DistributionType.BIN}
+
+version = mod_version
+group = mod_group_id
+base {archivesName = mod_id}
+configurations { runtimeClasspath.extendsFrom localRuntime }
+
+// JDK版本
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    maven { url = "https://www.cursemaven.com" } // 允许引入CurseForge上的Mod
+}
+
+dependencies {
+    implementation "curse.maven:jei-238222:7391682" // compileOnly | runtimeOnly
+    compileOnly "curse.maven:millenaire-270871:8772286" // compileOnly | runtimeOnly
+}
+
+sourceSets {
+    // 原内容，无需修改
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir('src/generated/resources')
+            exclude("**/*.bbmodel")
+            exclude("src/generated/**/.cache")
+        }
+    }
+    /*
+    // 定义`datagen(名称可自定义)`源码集，专门存放 DataGen 逻辑与辅助工具包
+    datagen {
+        java {
+            srcDir 'src/datagen/java'
+             // 将外部 gen_data_helper 工具包源码仅挂载至 datagen 源码集,这样该目录仅在执行 runData 时参与编译，打包正式 JAR (./gradlew build) 时会被 Gradle 彻底忽略。
+            srcDir 'F:/1_Project/Minecraft/0_CodePackage'
+            include 'com/momos/gen_data_helper/**'
+        }
+        // 允许`datagen`源码访问 main 中的类[不需要]，并共享`外部库`
+        compileClasspath += main.compileClasspath + main.output
+        // runData依赖
+        runtimeClasspath += main.runtimeClasspath + main.output
+    }
+    */
+}
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+            // sourceSet = sourceSets.datagen // runData时`datagen`也参与
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+            // sourceSet(sourceSets.datagen) // 将 datagen 源码集加入模组扫描范围，使 @EventBusSubscriber 能被正确识别
+        }
+    }
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+
+import java.util.zip.*
+
+// 在 Task 配置阶段提前解析 ASM 依赖，避开 Configuration Cache 对 project 的限制
+def asmDependencyFiles = configurations.detachedConfiguration(
+        dependencies.create('org.ow2.asm:asm:9.7')
+).files
+
+tasks.register('fixMillenaireJarBatch') {
+    def inputJarFile = layout.projectDirectory.file("run/mods/millenaire-9.0.1.jar").asFile
+    def outputJarFile = layout.projectDirectory.file("libs/millenaire-fixed.jar").asFile
+    def asmJars = asmDependencyFiles
+
+    doLast {
+        if (!inputJarFile.exists()) {
+            println "错误：未在 run/mods/ 下找到 millenaire-9.0.1.jar"
+            return
+        }
+
+        println ">>> 正在隔离加载 OW2 ASM 库..."
+
+        // 使用当前脚本的 ClassLoader 作为父加载器，保留 Groovy 运行时环境
+        def gcl = new GroovyClassLoader(getClass().classLoader)
+        asmJars.each { gcl.addURL(it.toURI().toURL()) }
+
+        println ">>> 正在使用 ASM 彻底剥离 @EventBusSubscriber 注解..."
+
+        def fixerClass = gcl.parseClass('''
+            import java.util.zip.*
+            import org.objectweb.asm.*
+
+            class JarFixer {
+                static void fix(File inputJarFile, File outputJarFile) {
+                    outputJarFile.parentFile.mkdirs()
+                    inputJarFile.withInputStream { is ->
+                        new ZipInputStream(is).withCloseable { zis ->
+                            outputJarFile.withOutputStream { os ->
+                                new ZipOutputStream(os).withCloseable { zos ->
+                                    ZipEntry entry
+                                    while ((entry = zis.nextEntry) != null) {
+                                        zos.putNextEntry(new ZipEntry(entry.name))
+                                        byte[] bytes = zis.readAllBytes()
+
+                                        if (entry.name.endsWith(".class") && entry.name.startsWith("org/millenaire/")) {
+                                            try {
+                                                ClassReader cr = new ClassReader(bytes)
+                                                ClassWriter cw = new ClassWriter(0)
+                                                ClassVisitor cv = new ClassVisitor(Opcodes.ASM9, cw) {
+                                                    @Override
+                                                    AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+                                                        if (descriptor != null && descriptor.contains("EventBusSubscriber")) {
+                                                            return null
+                                                        }
+                                                        return super.visitAnnotation(descriptor, visible)
+                                                    }
+                                                }
+                                                cr.accept(cv, 0)
+                                                zos.write(cw.toByteArray())
+                                            } catch (Exception e) {
+                                                println "解析 ${entry.name} 失败，保留原文件: ${e.message}"
+                                                zos.write(bytes)
+                                            }
+                                        } else {
+                                            zos.write(bytes)
+                                        }
+                                        zos.closeEntry()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ''')
+
+        fixerClass.getDeclaredMethod("fix", File, File).invoke(null, inputJarFile, outputJarFile)
+        println ">>> 修复完成！已生成全新的干净包：libs/millenaire-fixed.jar"
+    }
+}

@@ -1,0 +1,99 @@
+# 这是 neoforge.mods.toml 示例文件，包含模组加载所需的相关数据。
+# 其中包含若干必填字段（#必填）与可选字段（#可选）。
+# 整体格式为标准的 TOML 格式 (v0.5.0)。
+# 注意，该文件中包含部分 TOML 列表结构。
+# 了解更多关于 TOML 格式的信息，请访问：https://github.com/toml-lang/toml
+
+# 要加载的模组加载器类型名称 - 对于标准的 FML @Mod 模组，应为 javafml
+modLoader="javafml" #必填
+
+# 该模组加载器匹配的版本范围 - 对于标准的 FML @Mod，该值为 FML 版本（目前为 2）。
+loaderVersion="${loader_version_range}" #必填
+
+# 模组许可协议（License）。这是必填元数据，方便他人了解模组的分发与再许可属性。
+# 请在 https://choosealicense.com/ 查看许可选项。默认版权声明为“保留所有权利”（All rights reserved）。
+license="${mod_license}"
+
+# 模组发生问题时引导用户反馈的 Issue 追踪链接
+#issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #可选
+
+# 模组列表 - 允许填入的数量取决于具体的模组加载器
+[[mods]] #必填
+
+# 模组的 ID (modId)
+modId="${mod_id}" #必填
+
+# 模组的版本号
+version="${mod_version}" #必填
+
+# 模组的显示名称
+displayName="${mod_name}" #必填
+
+# 检查模组更新的 URL 链接。详见 JSON 更新规范：https://docs.neoforged.net/docs/misc/updatechecker/
+#updateJSONURL="https://change.me.example.invalid/updates.json" #可选
+
+# 模组的主页 URL，将在模组列表界面中显示
+#displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #可选
+
+# 模组 Logo 图标文件名（放置于模组 JAR 的根目录下），用于界面展示
+#logoFile="examplemod.png" #可选
+
+# 鸣谢/致谢文本，将在模组列表界面中显示
+#credits="" #可选
+
+# 模组作者列表，将在模组列表界面中显示（可选）
+#authors=""
+
+# 模组的详细描述文本（支持多行文本！）（#必填）
+description='''
+Millenaire 1.21.1 JEI Support.
+'''
+
+# [[mixins]] 块允许向 FML 声明你的 Mixin 配置文件，以便其被正确加载。
+#[[mixins]]
+#config="${mod_id}.mixins.json"
+
+# [[accessTransformers]] 块允许声明 Access Transformer (AT) 文件的位置。
+# 如果省略此块，程序将默认尝试从 META-INF/accesstransformer.cfg 加载 AT
+#[[accessTransformers]]
+#file="META-INF/accesstransformer.cfg"
+
+# coremods 配置文件路径不可更改，默认固定从 META-INF/coremods.json 加载
+
+# 依赖项声明 - 使用 . 指向具体 modid 的依赖。依赖配置是可选的。
+[[dependencies.${mod_id}]] #可选
+    # 所依赖的模组 ID
+    modId="neoforge" #必填
+    # 依赖类型。可选项为："required" (必须)、"optional" (可选)、"incompatible" (不兼容) 或 "discouraged" (不建议，不区分大小写)。
+    # 'required' 要求该模组必须存在；'optional' 表示非必需
+    # 'incompatible' 会在该模组存在时阻止游戏启动；'discouraged' 存在时会弹出警告
+    type="required" #必填
+    # 可选字段，说明为何需要该依赖或为什么不兼容
+    # reason="..."
+    # 依赖的适用版本范围
+    versionRange="[${neo_version},)" #必填
+    # 依赖项的加载顺序关系。
+    # BEFORE - 本模组将在依赖模组之前加载
+    # AFTER - 本模组将在依赖模组之后加载
+    ordering="NONE"
+    # 该依赖生效的运行端 - BOTH (双端)、CLIENT (仅客户端) 或 SERVER (仅服务端)
+    side="BOTH"
+
+# 另一个依赖声明示例
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    # 该版本范围声明了从当前 Minecraft 版本开始，直到（但不包含）下一个大版本的范围
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# Features 用于声明运行环境所需的特定属性。本例声明了
+# 模组需要 OpenGL 3.2 或更高版本。未来还会添加其他特性。此配置区分运行端，
+# 例如，声明此项不会阻碍模组在服务端（无界面环境）加载。
+#[features.${mod_id}]
+#openGLVersion="[3.2,)"
+
+# 注入时填写
+# [[mixins]]
+# config="modid.mixins.json"
