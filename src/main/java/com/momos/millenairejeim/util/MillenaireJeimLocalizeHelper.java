@@ -4,44 +4,86 @@ import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeiKeys;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.VillagerType;
 
-// 复合的高级API
+import java.util.Collection;
+
 public class MillenaireJeimLocalizeHelper {
+
     /**
-     * [新注释] 向 JEI 悬浮窗构建器 {@link ITooltipBuilder} 追加统一格式化的列表项 Component。
-     *
+     * 向 JEI 悬浮窗构建器 {@link ITooltipBuilder} 追加统一格式化的列表项 Component。
      * @param tooltip   JEI 悬浮窗构建器 {@link ITooltipBuilder}
      * @param entryName 列表项内容组件 {@link Component}
      */
     public static void addTooltipEntry(ITooltipBuilder tooltip, Component entryName) {
         if (tooltip != null && entryName != null) {
-            tooltip.add(
-                    Component.translatableWithFallback(MillenaireJeiKeys.KEY_TOOLTIP_ITEM_ENTRY, MillenaireJeiKeys.FALLBACK_TOOLTIP_ITEM_ENTRY, entryName)
-            );
+            tooltip.add(Component.translatableWithFallback(
+                    MillenaireJeiKeys.KEY_TOOLTIP_ITEM_ENTRY,
+                    MillenaireJeiKeys.FALLBACK_TOOLTIP_ITEM_ENTRY,
+                    entryName
+            ));
         }
     }
 
     /**
-     * 获取单个建筑/商店的基础文本展示组件 {@link Component}，并在末尾附加括号括起来的原始 Key。
-     * 格式示例："拜占庭(罗马) - 军备工坊 (armory)"
+     * [新注释] 检查指定建筑 Key 的译名在同组 Key 集合中是否存在重名。
+     * @param cultureId   文化 {@link ResourceLocation}
+     * @param targetKey   待检测的建筑注册路径或 shopId
+     * @param siblingKeys 同组所有建筑/商店 Key 集合
+     * @return 是否存在译名重名
+     */
+    public static boolean isNameDuplicate(ResourceLocation cultureId, String targetKey, Collection<String> siblingKeys) {
+        if (siblingKeys == null || siblingKeys.size() <= 1 || cultureId == null || targetKey == null) {
+            return false;
+        }
+        String targetName = MillenaireLocalizeHelper.getBuildingName(cultureId, targetKey).getString();
+        int matchCount = 0;
+        for (String key : siblingKeys) {
+            if (targetName.equals(MillenaireLocalizeHelper.getBuildingName(cultureId, key).getString())) {
+                matchCount++;
+                if (matchCount > 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * [新注释] 获取单个建筑/商店的基础文本展示组件 {@link Component}。
+     * 仅在 isDuplicate 为 true 时追加原始 Key 的括号后缀。
      * @param cultureId    文化 {@link ResourceLocation}
      * @param buildingPath 建筑注册路径或 shopId
-     * @return 带有原始 Key 的本地化组件 {@link Component}
+     * @param isDuplicate  是否存在重名
+     * @return 本地化组件 {@link Component}
      */
-    public static Component getBuildingText(ResourceLocation cultureId, String buildingPath) {
+    public static Component getBuildingText(ResourceLocation cultureId, String buildingPath, boolean isDuplicate) {
         if (cultureId == null || buildingPath == null) {
             return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_SHOP, MillenaireJeiKeys.FALLBACK_MISSING_SHOP);
         }
-        // [新注释] 拼接中文名称并在末尾使用括号附带原始 Key，方便区分同名建筑
-        return MillenaireLocalizeHelper.getCultureName(cultureId)
+        MutableComponent nameComponent = MillenaireLocalizeHelper.getCultureName(cultureId)
                 .append(" - ")
-                .append(MillenaireLocalizeHelper.getBuildingName(cultureId, buildingPath))
-                .append(" (")
-                .append(buildingPath)
-                .append(")");
+                .append(MillenaireLocalizeHelper.getBuildingName(cultureId, buildingPath));
+
+        if (isDuplicate) {
+            nameComponent.append(" (").append(buildingPath).append(")");
+        }
+        return nameComponent;
+    }
+
+    /**
+     * 获取单个建筑/商店的基础文本展示组件 {@link Component},自动对传入的 siblingKeys 集合进行译名重名检测。
+     * @param cultureId    文化 {@link ResourceLocation}
+     * @param buildingPath 建筑注册路径或 shopId
+     * @param siblingKeys  同组建筑 Key 集合，用于重名检测
+     * @return 本地化组件 {@link Component}
+     */
+    public static Component getBuildingText(ResourceLocation cultureId, String buildingPath, Collection<String> siblingKeys) {
+        boolean isDuplicate = isNameDuplicate(cultureId, buildingPath, siblingKeys);
+        return getBuildingText(cultureId, buildingPath, isDuplicate);
     }
 
     public static Component getCraftingVillagerText(VillagerType villagerType){

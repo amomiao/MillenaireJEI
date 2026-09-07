@@ -130,13 +130,22 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
             ));
 
             for (String bKey : buildingKeys) {
-                Component bName = MillenaireJeimLocalizeHelper.getBuildingText(recipe.getCultureId(), bKey);
-                // [新注释] 使用封装后的工具类方法追加列表项
+                // [新注释] 传入 buildingKeys 集合自动判断，仅在同组内存在重复译名时才追加 (bKey) 后缀
+                Component bName = MillenaireJeimLocalizeHelper.getBuildingText(recipe.getCultureId(), bKey, buildingKeys);
                 MillenaireJeimLocalizeHelper.addTooltipEntry(tooltip, bName);
             }
         }
     }
 
+    /**
+     * [新注释] 构建交易界面顶部的商店/建筑摘要。
+     * 自动检测是否存在译名重名，无重名时直接显示名称，不再拼接括号后缀。
+     *
+     * @param cultureId    文化 {@link ResourceLocation}
+     * @param shopId       商店 ID
+     * @param buildingKeys 关联的建筑 Key 集合
+     * @return 格式化的摘要组件 {@link Component}
+     */
     private Component buildShopSummaryComponent(ResourceLocation cultureId, String shopId, Set<String> buildingKeys) {
         if (cultureId == null || shopId == null) {
             return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_SHOP, MillenaireJeiKeys.FALLBACK_MISSING_SHOP);
@@ -146,29 +155,31 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
 
         if (buildingKeys == null || buildingKeys.isEmpty()) {
             return cultureName.append(" - ")
-                    .append(MillenaireLocalizeHelper.getBuildingName(cultureId, shopId))
-                    .append(" (").append(shopId).append(")");
+                    .append(MillenaireLocalizeHelper.getBuildingName(cultureId, shopId));
         }
 
         List<String> keyList = new ArrayList<>(buildingKeys);
         String firstKey = keyList.get(0);
         Component firstBuildingName = MillenaireLocalizeHelper.getBuildingName(cultureId, firstKey);
 
-        if (keyList.size() == 1) {
-            return cultureName.append(" - ")
-                    .append(firstBuildingName)
-                    .append(" (").append(firstKey).append(")");
-        } else {
+        // [新注释] 检测同组建筑中是否有翻译重复的情况
+        boolean isDuplicate = MillenaireJeimLocalizeHelper.isNameDuplicate(cultureId, firstKey, buildingKeys);
+
+        MutableComponent summary = cultureName.append(" - ").append(firstBuildingName);
+        if (isDuplicate) {
+            summary.append(" (").append(firstKey).append(")");
+        }
+
+        if (keyList.size() > 1) {
             String countSuffix = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_COUNT_PLACES,
                     MillenaireJeiKeys.FALLBACK_COUNT_PLACES,
                     keyList.size()
             ).getString();
-            return cultureName.append(" - ")
-                    .append(firstBuildingName)
-                    .append(" (").append(firstKey).append(") ")
-                    .append(countSuffix);
+            summary.append(" ").append(countSuffix);
         }
+
+        return summary;
     }
 
     @Override
