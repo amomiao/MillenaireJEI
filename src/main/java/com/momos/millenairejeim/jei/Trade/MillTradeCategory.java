@@ -93,7 +93,6 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
     public void draw(MillTradeRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         Font font = Minecraft.getInstance().font;
 
-        // [新注释] 获取去重后的基础建筑 Key 集合 (如 ["castlepolish", "mansionpolish"])
         Set<String> buildingKeys = MillenaireAPIHelper.getBuildingKeysByShopId(recipe.getCultureId(), recipe.getShopId());
         Component shopInfo = buildShopSummaryComponent(recipe.getCultureId(), recipe.getShopId(), buildingKeys);
 
@@ -131,13 +130,9 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
             ));
 
             for (String bKey : buildingKeys) {
-                // [新注释] 使用剥离后缀后的 bKey 获取正确的本地化名称
                 Component bName = MillenaireJeimLocalizeHelper.getBuildingText(recipe.getCultureId(), bKey);
-                tooltip.add(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_TOOLTIP_ITEM_ENTRY,
-                        MillenaireJeiKeys.FALLBACK_TOOLTIP_ITEM_ENTRY,
-                        bName
-                ));
+                // [新注释] 使用封装后的工具类方法追加列表项
+                MillenaireJeimLocalizeHelper.addTooltipEntry(tooltip, bName);
             }
         }
     }
@@ -150,7 +145,9 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         MutableComponent cultureName = MillenaireLocalizeHelper.getCultureName(cultureId);
 
         if (buildingKeys == null || buildingKeys.isEmpty()) {
-            return cultureName.append(" - ").append(MillenaireLocalizeHelper.getBuildingName(cultureId, shopId));
+            return cultureName.append(" - ")
+                    .append(MillenaireLocalizeHelper.getBuildingName(cultureId, shopId))
+                    .append(" (").append(shopId).append(")");
         }
 
         List<String> keyList = new ArrayList<>(buildingKeys);
@@ -158,14 +155,19 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         Component firstBuildingName = MillenaireLocalizeHelper.getBuildingName(cultureId, firstKey);
 
         if (keyList.size() == 1) {
-            return cultureName.append(" - ").append(firstBuildingName);
+            return cultureName.append(" - ")
+                    .append(firstBuildingName)
+                    .append(" (").append(firstKey).append(")");
         } else {
             String countSuffix = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_COUNT_PLACES,
                     MillenaireJeiKeys.FALLBACK_COUNT_PLACES,
                     keyList.size()
             ).getString();
-            return cultureName.append(" - ").append(firstBuildingName).append(" ").append(countSuffix);
+            return cultureName.append(" - ")
+                    .append(firstBuildingName)
+                    .append(" (").append(firstKey).append(") ")
+                    .append(countSuffix);
         }
     }
 

@@ -2,6 +2,7 @@ package com.momos.millenairejeim.util;
 
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.millenaire.building.BuildingPlanSet;
@@ -9,6 +10,19 @@ import org.millenaire.culture.VillagerType;
 
 // 复合的高级API
 public class MillenaireJeimLocalizeHelper {
+    /**
+     * [新注释] 向 JEI 悬浮窗构建器 {@link ITooltipBuilder} 追加统一格式化的列表项 Component。
+     *
+     * @param tooltip   JEI 悬浮窗构建器 {@link ITooltipBuilder}
+     * @param entryName 列表项内容组件 {@link Component}
+     */
+    public static void addTooltipEntry(ITooltipBuilder tooltip, Component entryName) {
+        if (tooltip != null && entryName != null) {
+            tooltip.add(
+                    Component.translatableWithFallback(MillenaireJeiKeys.KEY_TOOLTIP_ITEM_ENTRY, MillenaireJeiKeys.FALLBACK_TOOLTIP_ITEM_ENTRY, entryName)
+            );
+        }
+    }
 
     /**
      * 获取单个建筑/商店的基础文本展示组件 {@link Component}，并在末尾附加括号括起来的原始 Key。
