@@ -1,0 +1,38 @@
+{
+  "jei.millenaire.category.sell": "Millénaire Sell to Players",
+  "jei.millenaire.category.buy": "Millénaire Buy from Players",
+  "jei.millenaire.category.crafting": "Millénaire Crafting",
+  "jei.millenaire.category.painting": "Paint Bucket Coloring",
+
+  "jei.millenaire.trade.optional_buy": "[Secondary]",
+  "jei.millenaire.trade.min_reputation": "Required Reputation: %s",
+
+  "jei.millenaire.paint.target_color": "Target Color: %s",
+  "jei.millenaire.paint.painted_bricks": "Painted Bricks",
+  "jei.millenaire.paint.decorated_bricks": "Decorated Bricks",
+  "jei.millenaire.paint.painted_brick_stairs": "Painted Brick Stairs",
+  "jei.millenaire.paint.painted_brick_slabs": "Painted Brick Slabs",
+  "jei.millenaire.paint.painted_brick_walls": "Painted Brick Walls",
+
+  "jei.millenaire.crafting_type.crafting": "Crafting",
+  "jei.millenaire.crafting_type.cooking": "Cooking",
+  "jei.millenaire.crafting_type.baking": "Baking",
+  "jei.millenaire.crafting_type.smelting": "Smelting",
+
+  "jei.millenaire.assertion.missing_culture": "Missing Culture",
+  "jei.millenaire.assertion.missing_shop": "Missing Shop",
+  "jei.millenaire.assertion.missing_villager": "Missing Villager Type",
+  "jei.millenaire.assertion.missing_building": "Missing Building",
+  "jei.millenaire.assertion.missing_goal": "Missing Recipe Goal",
+
+  "jei.millenaire.crafting.label.crafting_type": "Crafting Type: ",
+  "jei.millenaire.crafting.label.villager": "Crafting Villager: ",
+  "jei.millenaire.crafting.label.building": "Associated Building: ",
+  "jei.millenaire.crafting.none_villager": "No Villager",
+  "jei.millenaire.crafting.none_building": "No Building",
+  "jei.millenaire.crafting.count_people": "and %d others",
+  "jei.millenaire.crafting.count_places": "(+%d)",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l[Crafting Villagers]",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l[Crafting Buildings]",
+  "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
+}

@@ -1,0 +1,38 @@
+{
+  "jei.millenaire.category.sell": "Venda de Millénaire para Jogadores",
+  "jei.millenaire.category.buy": "Compra de Millénaire de Jogadores",
+  "jei.millenaire.category.crafting": "Fabricação do Millénaire",
+  "jei.millenaire.category.painting": "Tingimento com Balde de Tinta",
+
+  "jei.millenaire.trade.optional_buy": "[Secundário]",
+  "jei.millenaire.trade.min_reputation": "Reputação Necessária: %s",
+
+  "jei.millenaire.paint.target_color": "Cor Alvo: %s",
+  "jei.millenaire.paint.painted_bricks": "Tijolos Pintados",
+  "jei.millenaire.paint.decorated_bricks": "Tijolos Decorados",
+  "jei.millenaire.paint.painted_brick_stairs": "Escadas de Tijolos Pintados",
+  "jei.millenaire.paint.painted_brick_slabs": "Lajes de Tijolos Pintados",
+  "jei.millenaire.paint.painted_brick_walls": "Muros de Tijolos Pintados",
+
+  "jei.millenaire.crafting_type.crafting": "Fabricação",
+  "jei.millenaire.crafting_type.cooking": "Cozimento",
+  "jei.millenaire.crafting_type.baking": "Confeitaria",
+  "jei.millenaire.crafting_type.smelting": "Fundição",
+
+  "jei.millenaire.assertion.missing_culture": "Cultura Ausente",
+  "jei.millenaire.assertion.missing_shop": "Loja Ausente",
+  "jei.millenaire.assertion.missing_villager": "Tipo de Aldeão Ausente",
+  "jei.millenaire.assertion.missing_building": "Construção Ausente",
+  "jei.millenaire.assertion.missing_goal": "Objetivo de Receita Ausente",
+
+  "jei.millenaire.crafting.label.crafting_type": "Tipo de Fabricação: ",
+  "jei.millenaire.crafting.label.villager": "Aldeão Artesão: ",
+  "jei.millenaire.crafting.label.building": "Construção Associada: ",
+  "jei.millenaire.crafting.none_villager": "Nenhum Aldeão",
+  "jei.millenaire.crafting.none_building": "Nenhuma Construção",
+  "jei.millenaire.crafting.count_people": "e mais %d",
+  "jei.millenaire.crafting.count_places": "(+%d)",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l[Aldeões Artesãos]",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l[Construções de Fabricação]",
+  "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
+}

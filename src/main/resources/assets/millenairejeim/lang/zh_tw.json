@@ -1,0 +1,38 @@
+{
+  "jei.millenaire.category.sell": "千年村莊售出給玩家",
+  "jei.millenaire.category.buy": "千年村莊收購自玩家",
+  "jei.millenaire.category.crafting": "千年村莊工藝",
+  "jei.millenaire.category.painting": "油漆桶染色",
+
+  "jei.millenaire.trade.optional_buy": "[次要]",
+  "jei.millenaire.trade.min_reputation": "需要聲望: %s",
+
+  "jei.millenaire.paint.target_color": "目標顏色: %s",
+  "jei.millenaire.paint.painted_bricks": "刷漆磚塊",
+  "jei.millenaire.paint.decorated_bricks": "花紋磚塊",
+  "jei.millenaire.paint.painted_brick_stairs": "刷漆磚階梯",
+  "jei.millenaire.paint.painted_brick_slabs": "刷漆磚台階",
+  "jei.millenaire.paint.painted_brick_walls": "刷漆磚牆",
+
+  "jei.millenaire.crafting_type.crafting": "合成",
+  "jei.millenaire.crafting_type.cooking": "烹飪",
+  "jei.millenaire.crafting_type.baking": "烘焙",
+  "jei.millenaire.crafting_type.smelting": "冶鍊",
+
+  "jei.millenaire.assertion.missing_culture": "缺失文化",
+  "jei.millenaire.assertion.missing_shop": "缺失商店",
+  "jei.millenaire.assertion.missing_villager": "缺失村民類型",
+  "jei.millenaire.assertion.missing_building": "缺失建築",
+  "jei.millenaire.assertion.missing_goal": "缺失配方目標",
+
+  "jei.millenaire.crafting.label.crafting_type": "工藝類型: ",
+  "jei.millenaire.crafting.label.villager": "製作村民: ",
+  "jei.millenaire.crafting.label.building": "關聯建築: ",
+  "jei.millenaire.crafting.none_villager": "無村民",
+  "jei.millenaire.crafting.none_building": "無建築",
+  "jei.millenaire.crafting.count_people": "等%d人",
+  "jei.millenaire.crafting.count_places": "(+%d)",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l【製作村民】",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l【製作建築】",
+  "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
+}

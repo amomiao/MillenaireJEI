@@ -94,18 +94,34 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         Font font = Minecraft.getInstance().font;
 
         Set<String> buildingKeys = MillenaireAPIHelper.getBuildingKeysByShopId(recipe.getCultureId(), recipe.getShopId());
-        Component shopInfo = buildShopSummaryComponent(recipe.getCultureId(), recipe.getShopId(), buildingKeys);
 
-        guiGraphics.drawString(font, shopInfo, 5, 4, 0x404040, false);
+        /**
+         * [新注释] 顶行左侧：使用 {@link MillenaireLocalizeHelper#getCultureName(ResourceLocation)} 绘制文化名称。
+         */
+        MutableComponent cultureName = MillenaireLocalizeHelper.getCultureName(recipe.getCultureId());
+        guiGraphics.drawString(font, cultureName, 5, 4, 0x404040, false);
 
+        /**
+         * [新注释] 顶行右侧：若为次要交易，计算组件宽度后在右侧（X=155）右对齐绘制 [Secondary]/[次要] 标识。
+         */
         if (recipe.getTradeType() == MillTradeRecipe.TradeType.VILLAGE_BUYS_OPTIONAL) {
             Component optionalBuyComp = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_TRADE_OPTIONAL_BUY,
                     MillenaireJeiKeys.FALLBACK_TRADE_OPTIONAL_BUY
             );
-            guiGraphics.drawString(font, optionalBuyComp, 5, 15, 0x888888, false);
+            int tagWidth = font.width(optionalBuyComp);
+            guiGraphics.drawString(font, optionalBuyComp, 155 - tagWidth, 4, 0x888888, false);
         }
 
+        /**
+         * [新注释] 第二行：调用重构后的 {@link #buildShopSummaryComponent(ResourceLocation, String, Set)} 绘制建筑名称及多地点摘要。
+         */
+        Component buildingInfo = buildShopSummaryComponent(recipe.getCultureId(), recipe.getShopId(), buildingKeys);
+        guiGraphics.drawString(font, buildingInfo, 5, 15, 0x555555, false);
+
+        /**
+         * [新注释] 底行：独占位置绘制红字声望要求。
+         */
         if (recipe.getTradeGood().minReputation() > 0) {
             Component repInfo = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_TRADE_MIN_REPUTATION,
@@ -146,16 +162,16 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
      * @param buildingKeys 关联的建筑 Key 集合
      * @return 格式化的摘要组件 {@link Component}
      */
+    /**
+     * [新注释] 重构：取消文化名称前缀拼装，仅构建第二行（建筑名称 + 消歧义ID + 额外地点计数）。
+     */
     private Component buildShopSummaryComponent(ResourceLocation cultureId, String shopId, Set<String> buildingKeys) {
         if (cultureId == null || shopId == null) {
             return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_SHOP, MillenaireJeiKeys.FALLBACK_MISSING_SHOP);
         }
 
-        MutableComponent cultureName = MillenaireLocalizeHelper.getCultureName(cultureId);
-
         if (buildingKeys == null || buildingKeys.isEmpty()) {
-            return cultureName.append(" - ")
-                    .append(MillenaireLocalizeHelper.getBuildingName(cultureId, shopId));
+            return MillenaireLocalizeHelper.getBuildingName(cultureId, shopId);
         }
 
         List<String> keyList = new ArrayList<>(buildingKeys);
@@ -165,16 +181,20 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         // [新注释] 检测同组建筑中是否有翻译重复的情况
         boolean isDuplicate = MillenaireJeimLocalizeHelper.isNameDuplicate(cultureId, firstKey, buildingKeys);
 
-        MutableComponent summary = cultureName.append(" - ").append(firstBuildingName);
+        MutableComponent summary = firstBuildingName.copy();
         if (isDuplicate) {
             summary.append(" (").append(firstKey).append(")");
         }
 
-        if (keyList.size() > 1) {
+        /**
+         * [新注释] 若除了当前展示建筑外还有其他地点，计算差值额外地点数，并拼接简短计数格式。
+         */
+        int extraPlaces = keyList.size() - 1;
+        if (extraPlaces > 0) {
             String countSuffix = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_COUNT_PLACES,
                     MillenaireJeiKeys.FALLBACK_COUNT_PLACES,
-                    keyList.size()
+                    extraPlaces
             ).getString();
             summary.append(" ").append(countSuffix);
         }

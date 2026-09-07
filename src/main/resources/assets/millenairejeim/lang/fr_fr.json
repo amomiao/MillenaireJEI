@@ -1,0 +1,38 @@
+{
+  "jei.millenaire.category.sell": "Vente du village Millénaire aux joueurs",
+  "jei.millenaire.category.buy": "Achat au village Millénaire par les joueurs",
+  "jei.millenaire.category.crafting": "Artisanat du village Millénaire",
+  "jei.millenaire.category.painting": "Peinture avec un seau de peinture",
+
+  "jei.millenaire.trade.optional_buy": "[Secondaire]",
+  "jei.millenaire.trade.min_reputation": "Réputation requise : %s",
+
+  "jei.millenaire.paint.target_color": "Couleur cible : %s",
+  "jei.millenaire.paint.painted_bricks": "Briques peintes",
+  "jei.millenaire.paint.decorated_bricks": "Briques décorées",
+  "jei.millenaire.paint.painted_brick_stairs": "Escaliers en briques peintes",
+  "jei.millenaire.paint.painted_brick_slabs": "Dalles en briques peintes",
+  "jei.millenaire.paint.painted_brick_walls": "Murets en briques peintes",
+
+  "jei.millenaire.crafting_type.crafting": "Fabrication",
+  "jei.millenaire.crafting_type.cooking": "Cuisson",
+  "jei.millenaire.crafting_type.baking": "Pâtisserie",
+  "jei.millenaire.crafting_type.smelting": "Fusion",
+
+  "jei.millenaire.assertion.missing_culture": "Culture manquante",
+  "jei.millenaire.assertion.missing_shop": "Boutique manquante",
+  "jei.millenaire.assertion.missing_villager": "Type de villageois manquant",
+  "jei.millenaire.assertion.missing_building": "Bâtiment manquant",
+  "jei.millenaire.assertion.missing_goal": "Objectif de recette manquant",
+
+  "jei.millenaire.crafting.label.crafting_type": "Type d'artisanat : ",
+  "jei.millenaire.crafting.label.villager": "Villageois artisan : ",
+  "jei.millenaire.crafting.label.building": "Bâtiment associé : ",
+  "jei.millenaire.crafting.none_villager": "Aucun villageois",
+  "jei.millenaire.crafting.none_building": "Aucun bâtiment",
+  "jei.millenaire.crafting.count_people": "et %d autres",
+  "jei.millenaire.crafting.count_places": "(+%d)",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l[Villageois artisans]",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l[Bâtiments d'artisanat]",
+  "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
+}

@@ -1,0 +1,38 @@
+{
+  "jei.millenaire.category.sell": "Millénaire-Verkauf an Spieler",
+  "jei.millenaire.category.buy": "Millénaire-Ankauf von Spielern",
+  "jei.millenaire.category.crafting": "Millénaire-Herstellung",
+  "jei.millenaire.category.painting": "Färben mit Farbeimer",
+
+  "jei.millenaire.trade.optional_buy": "[Sekundär]",
+  "jei.millenaire.trade.min_reputation": "Benötigter Ruf: %s",
+
+  "jei.millenaire.paint.target_color": "Zielfarbe: %s",
+  "jei.millenaire.paint.painted_bricks": "Bemalte Ziegel",
+  "jei.millenaire.paint.decorated_bricks": "Verzierte Ziegel",
+  "jei.millenaire.paint.painted_brick_stairs": "Bemalte Ziegeltreppe",
+  "jei.millenaire.paint.painted_brick_slabs": "Bemalte Ziegelstufe",
+  "jei.millenaire.paint.painted_brick_walls": "Bemalte Ziegelmauer",
+
+  "jei.millenaire.crafting_type.crafting": "Herstellung",
+  "jei.millenaire.crafting_type.cooking": "Kochen",
+  "jei.millenaire.crafting_type.baking": "Backen",
+  "jei.millenaire.crafting_type.smelting": "Schmelzen",
+
+  "jei.millenaire.assertion.missing_culture": "Fehlende Kultur",
+  "jei.millenaire.assertion.missing_shop": "Fehlender Laden",
+  "jei.millenaire.assertion.missing_villager": "Fehlender Dorfbewohnertyp",
+  "jei.millenaire.assertion.missing_building": "Fehlendes Gebäude",
+  "jei.millenaire.assertion.missing_goal": "Fehlendes Rezeptziel",
+
+  "jei.millenaire.crafting.label.crafting_type": "Herstellungsart: ",
+  "jei.millenaire.crafting.label.villager": "Handwerker-Dorfbewohner: ",
+  "jei.millenaire.crafting.label.building": "Zugehöriges Gebäude: ",
+  "jei.millenaire.crafting.none_villager": "Kein Dorfbewohner",
+  "jei.millenaire.crafting.none_building": "Kein Gebäude",
+  "jei.millenaire.crafting.count_people": "und %d weitere",
+  "jei.millenaire.crafting.count_places": "(+%d)",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l[Handwerker-Dorfbewohner]",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l[Herstellungsgebäude]",
+  "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
+}

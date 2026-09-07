@@ -1,0 +1,38 @@
+{
+  "jei.millenaire.category.sell": "Продажа Millénaire игрокам",
+  "jei.millenaire.category.buy": "Покупка Millénaire у игроков",
+  "jei.millenaire.category.crafting": "Создание Millénaire",
+  "jei.millenaire.category.painting": "Окрашивание ведром краски",
+
+  "jei.millenaire.trade.optional_buy": "[Втор.]",
+  "jei.millenaire.trade.min_reputation": "Требуемая репутация: %s",
+
+  "jei.millenaire.paint.target_color": "Целевой цвет: %s",
+  "jei.millenaire.paint.painted_bricks": "Окрашенные кирпичи",
+  "jei.millenaire.paint.decorated_bricks": "Узорчатые кирпичи",
+  "jei.millenaire.paint.painted_brick_stairs": "Окрашенные кирпичные ступеньки",
+  "jei.millenaire.paint.painted_brick_slabs": "Окрашенные кирпичные плиты",
+  "jei.millenaire.paint.painted_brick_walls": "Окрашенные кирпичные ограды",
+
+  "jei.millenaire.crafting_type.crafting": "Создание",
+  "jei.millenaire.crafting_type.cooking": "Готовка",
+  "jei.millenaire.crafting_type.baking": "Выпечка",
+  "jei.millenaire.crafting_type.smelting": "Плавка",
+
+  "jei.millenaire.assertion.missing_culture": "Отсутствует культура",
+  "jei.millenaire.assertion.missing_shop": "Отсутствует магазин",
+  "jei.millenaire.assertion.missing_villager": "Отсутствует тип жителя",
+  "jei.millenaire.assertion.missing_building": "Отсутствует строение",
+  "jei.millenaire.assertion.missing_goal": "Отсутствует цель рецепта",
+
+  "jei.millenaire.crafting.label.crafting_type": "Тип производства: ",
+  "jei.millenaire.crafting.label.villager": "Житель-ремесленник: ",
+  "jei.millenaire.crafting.label.building": "Связанное здание: ",
+  "jei.millenaire.crafting.none_villager": "Нет жителя",
+  "jei.millenaire.crafting.none_building": "Нет здания",
+  "jei.millenaire.crafting.count_people": "и ещё %d",
+  "jei.millenaire.crafting.count_places": "(+%d)",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l[Жители-ремесленники]",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l[Производственные здания]",
+  "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
+}

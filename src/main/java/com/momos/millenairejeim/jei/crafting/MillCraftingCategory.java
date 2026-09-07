@@ -72,9 +72,14 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
         return 160;
     }
 
+    /**
+     * [新注释] 增大 JEI 分类页面高度至 105，以容纳换行后的标签与详细内容展示。
+     *
+     * @return 界面高度 (像素)
+     */
     @Override
     public int getHeight() {
-        return 80;
+        return 105;
     }
 
     @Override
@@ -107,6 +112,15 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
         }
     }
 
+    /**
+     * [新注释] 绘制界面文本。已将【标签名】与【具体内容】拆分为两行显示，且内容行增加 6 像素缩进，避免文本超出界面边缘。
+     *
+     * @param recipe          {@link MillCraftingRecipe}
+     * @param recipeSlotsView {@link IRecipeSlotsView}
+     * @param guiGraphics     {@link GuiGraphics}
+     * @param mouseX          鼠标 X 坐标
+     * @param mouseY          鼠标 Y 坐标
+     */
     @Override
     public void draw(MillCraftingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         Font font = Minecraft.getInstance().font;
@@ -185,16 +199,33 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
                 MillenaireJeiKeys.FALLBACK_LABEL_BUILDING
         ).getString();
 
-        guiGraphics.drawString(font, "§8" + labelCraftingType + "§5" + formattedCraftingType, 6, 44, 0x404040, false);
-        guiGraphics.drawString(font, "§8" + labelVillager + "§2" + villagerSummary, 6, 55, 0x404040, false);
-        guiGraphics.drawString(font, "§8" + labelBuilding + "§3" + buildingSummary, 6, 66, 0x404040, false);
+        // 1. 制作类型（第一行标题，第二行缩进内容）
+        guiGraphics.drawString(font, "§8" + labelCraftingType, 6, 45, 0x404040, false);
+        guiGraphics.drawString(font, "§5" + formattedCraftingType, 12, 54, 0x404040, false);
+
+        // 2. 制作村民（第一行标题，第二行缩进内容）
+        guiGraphics.drawString(font, "§8" + labelVillager, 6, 65, 0x404040, false);
+        guiGraphics.drawString(font, "§2" + villagerSummary, 12, 74, 0x404040, false);
+
+        // 3. 关联建筑（第一行标题，第二行缩进内容）
+        guiGraphics.drawString(font, "§8" + labelBuilding, 6, 85, 0x404040, false);
+        guiGraphics.drawString(font, "§3" + buildingSummary, 12, 94, 0x404040, false);
     }
 
+    /**
+     * [新注释] 构建鼠标悬停 Tooltip。已根据换行后的界面 Y 轴坐标调整检测区域。
+     *
+     * @param tooltip         {@link ITooltipBuilder}
+     * @param recipe          {@link MillCraftingRecipe}
+     * @param recipeSlotsView {@link IRecipeSlotsView}
+     * @param mouseX          鼠标 X 坐标
+     * @param mouseY          鼠标 Y 坐标
+     */
     @Override
     public void getTooltip(ITooltipBuilder tooltip, MillCraftingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
         if (mouseX >= 6 && mouseX <= 154) {
-            // 2. 悬停在【制作村民】行 (y: 53 ~ 64)
-            if (mouseY >= 53 && mouseY < 64) {
+            // [新注释] 悬停在【制作村民】坐标范围 (y: 65 ~ 83)
+            if (mouseY >= 65 && mouseY < 83) {
                 List<VillagerType> villagers = recipe.getVillagerTypes();
                 if (villagers.size() <= 1) {
                     return;
@@ -211,15 +242,14 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
                 } else {
                     villagers.forEach(v -> {
                         Component vName = MillenaireJeimLocalizeHelper.getCraftingVillagerText(v);
-                        // [新注释] 使用封装后的工具类方法追加列表项
                         MillenaireJeimLocalizeHelper.addTooltipEntry(tooltip, vName);
                     });
                 }
                 return;
             }
 
-            // 3. 悬停在【关联建筑】行 (y: 64 ~ 75)
-            if (mouseY >= 64 && mouseY <= 75) {
+            // [新注释] 悬停在【关联建筑】坐标范围 (y: 85 ~ 103)
+            if (mouseY >= 85 && mouseY <= 103) {
                 List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
                 if (buildings.size() <= 1) {
                     return;
@@ -236,7 +266,6 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
                 } else {
                     buildings.forEach(b -> {
                         Component bName = MillenaireJeimLocalizeHelper.getCraftingBuildingText(b);
-                        // [新注释] 使用封装后的工具类方法追加列表项
                         MillenaireJeimLocalizeHelper.addTooltipEntry(tooltip, bName);
                     });
                 }

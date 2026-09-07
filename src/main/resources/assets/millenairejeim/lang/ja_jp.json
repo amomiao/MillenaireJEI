@@ -1,0 +1,38 @@
+{
+  "jei.millenaire.category.sell": "Millénaire村の販売",
+  "jei.millenaire.category.buy": "Millénaire村の買取",
+  "jei.millenaire.category.crafting": "Millénaireの生産",
+  "jei.millenaire.category.painting": "ペンキバケツでの塗装",
+
+  "jei.millenaire.trade.optional_buy": "[サブ]",
+  "jei.millenaire.trade.min_reputation": "必要評判: %s",
+
+  "jei.millenaire.paint.target_color": "指定色: %s",
+  "jei.millenaire.paint.painted_bricks": "塗装されたレンガ",
+  "jei.millenaire.paint.decorated_bricks": "模様入りのレンガ",
+  "jei.millenaire.paint.painted_brick_stairs": "塗装されたレンガの階段",
+  "jei.millenaire.paint.painted_brick_slabs": "塗装されたレンガのハーフブロック",
+  "jei.millenaire.paint.painted_brick_walls": "塗装されたレンガの塀",
+
+  "jei.millenaire.crafting_type.crafting": "クラフト",
+  "jei.millenaire.crafting_type.cooking": "調理",
+  "jei.millenaire.crafting_type.baking": "製菓",
+  "jei.millenaire.crafting_type.smelting": "精錬",
+
+  "jei.millenaire.assertion.missing_culture": "文化が不十分です",
+  "jei.millenaire.assertion.missing_shop": "商店が見つかりません",
+  "jei.millenaire.assertion.missing_villager": "村人の種類が見つかりません",
+  "jei.millenaire.assertion.missing_building": "建築物が見つかりません",
+  "jei.millenaire.assertion.missing_goal": "レシピ目標が見つかりません",
+
+  "jei.millenaire.crafting.label.crafting_type": "クラフトタイプ: ",
+  "jei.millenaire.crafting.label.villager": "担当の村人: ",
+  "jei.millenaire.crafting.label.building": "関連する建築物: ",
+  "jei.millenaire.crafting.none_villager": "村人なし",
+  "jei.millenaire.crafting.none_building": "建築物なし",
+  "jei.millenaire.crafting.count_people": "他 %d 名",
+  "jei.millenaire.crafting.count_places": "(+%d)",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l[クラフト担当の村人]",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l[生産建築物]",
+  "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
+}
