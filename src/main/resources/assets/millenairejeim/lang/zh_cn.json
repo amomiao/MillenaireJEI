@@ -30,7 +30,7 @@
   "jei.millenaire.crafting.label.building": "关联建筑: ",
   "jei.millenaire.crafting.none_villager": "无村民",
   "jei.millenaire.crafting.none_building": "无建筑",
-  "jei.millenaire.crafting.count_people": "等%d人",
+  "jei.millenaire.crafting.count_people": "(+%d)",
   "jei.millenaire.crafting.count_places": "(+%d)",
   "jei.millenaire.crafting.tooltip.villagers_header": "§2§l【制作村民】",
   "jei.millenaire.crafting.tooltip.buildings_header": "§3§l【制作建筑】",

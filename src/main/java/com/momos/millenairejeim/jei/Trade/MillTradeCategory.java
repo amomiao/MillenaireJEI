@@ -134,7 +134,7 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
 
     @Override
     public void getTooltip(ITooltipBuilder tooltip, MillTradeRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
-        if (mouseX >= 5 && mouseX <= 155 && mouseY >= 2 && mouseY <= 14) {
+        if (mouseX >= 5 && mouseX <= 155 && mouseY >= 2 && mouseY <= 25) {
             Set<String> buildingKeys = MillenaireAPIHelper.getBuildingKeysByShopId(recipe.getCultureId(), recipe.getShopId());
             if (buildingKeys.size() <= 1) {
                 return;
