@@ -98,7 +98,6 @@ public final class MillenaireAPIHelper {
      * @see ShopProfileLoader#getProfiles(ResourceLocation)
      */
     public static Map<String, ShopProfile> getShopProfiles(ResourceLocation cultureId) {return ShopProfileLoader.getProfiles(cultureId);}
-
     /**
      * 根据文化和商品 ID 检索特定的商业商品实体 {@link TradeGood}。
      * @param cultureId 文化 ResourceLocation
@@ -107,7 +106,6 @@ public final class MillenaireAPIHelper {
      * @see TradeGoodsLoader#getGoodById(ResourceLocation, String)
      */
     public static TradeGood getTradeGood(ResourceLocation cultureId, String goodId) {return TradeGoodsLoader.getGoodById(cultureId, goodId);}
-
     /**
      * 从商品实体 {@link TradeGood} 中解析对应的 Minecraft {@link Item}。
      * @param good 商品实体
@@ -119,6 +117,48 @@ public final class MillenaireAPIHelper {
             return null;
         }
         return good.resolveItem();
+    }
+    /**
+     * [新注释] 根据文化 ID 与商店标识查找所有对应的基础建筑标识 (Building Key) 集合。
+     * 自动剥离变体 (_a) 与等级 (_2) 后缀，完成建筑集维度的去重。
+     *
+     * @param cultureId 文化 {@link ResourceLocation}
+     * @param shopId    商店标识
+     * @return 匹配到的基础建筑 Key 集合 {@link Set}（例如: ["castlepolish", "mansionpolish"]）
+     */
+    public static Set<String> getBuildingKeysByShopId(ResourceLocation cultureId, String shopId) {
+        Set<String> matchedBuildingKeys = new HashSet<>();
+        if (cultureId == null || shopId == null) {
+            return matchedBuildingKeys;
+        }
+        Map<ResourceLocation, BuildingPlan> buildingMap = getAllBuildingPlans();
+        if (buildingMap != null) {
+            for (BuildingPlan plan : buildingMap.values()) {
+                // [新注释] 匹配文化与商店 ID
+                if (plan != null && shopId.equals(plan.shopId()) && cultureId.equals(plan.culture())) {
+                    String baseKey = extractBaseBuildingKey(plan.id());
+                    if (!baseKey.isEmpty()) {
+                        matchedBuildingKeys.add(baseKey);
+                    }
+                }
+            }
+        }
+        return matchedBuildingKeys;
+    }
+    /**
+     * [新注释] 从 BuildingPlan 的 ResourceLocation 中提取基础建筑 Key。
+     * 例如："millenaire:polish/castlepolish_a_2" -> "castlepolish"
+     */
+    public static String extractBaseBuildingKey(ResourceLocation planId) {
+        if (planId == null) return "";
+        String path = planId.getPath();
+
+        // 1. 剥离文化路径前缀 (如 "polish/castlepolish_a_2" -> "castlepolish_a_2")
+        if (path.contains("/")) {
+            path = path.substring(path.lastIndexOf('/') + 1);
+        }
+        // 2. 剥离变体字母与等级数字后缀 (如 "castlepolish_a_2" -> "castlepolish")
+        return path.replaceAll("_[a-zA-Z]_\\d+$", "");
     }
     // endregion 交易 API
 

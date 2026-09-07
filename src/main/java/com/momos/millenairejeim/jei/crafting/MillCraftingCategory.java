@@ -1,6 +1,5 @@
 package com.momos.millenairejeim.jei.crafting;
 
-import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeiKeys;
 import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;

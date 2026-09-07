@@ -1,8 +1,11 @@
 package com.momos.millenairejeim.jei.Trade;
 
+import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeiKeys;
 import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
@@ -15,11 +18,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 
-/**
- * JEI 交易 Category 渲染器。
- * 负责渲染 {@link MillTradeRecipe} 的输入输出槽位、商店信息以及声望限制提示。
- */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
     private final RecipeType<MillTradeRecipe> recipeType;
     private final Component title;
@@ -65,23 +70,17 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         int coinCount = recipe.getCoinStacks().size();
 
         if (isSellingCategory) {
-            // [新注释] 售出模式：
-            // 左侧货币(n)：以左侧区域中心点 (X=34) 动态居中
             int coinStartX = 34 - (coinCount * 9);
             for (int i = 0; i < coinCount; i++) {
                 builder.addSlot(RecipeIngredientRole.INPUT, coinStartX + (i * 18), 26)
                         .addItemStack(recipe.getCoinStacks().get(i));
             }
-            // 右侧商品(1)：在右侧区域中心点 (X=126) 居中，左上角起点 X=117
             builder.addSlot(RecipeIngredientRole.OUTPUT, 117, 26)
                     .addIngredients(recipe.getItemIngredient());
         } else {
-            // [新注释] 收购模式：
-            // 左侧商品(1)：在左侧区域中心点 (X=34) 居中，左上角起点 X=25
             builder.addSlot(RecipeIngredientRole.INPUT, 25, 26)
                     .addIngredients(recipe.getItemIngredient());
 
-            // 右侧货币(n)：以右侧区域中心点 (X=126) 动态居中，3种货币时起点 X=99，完美收纳在右侧区域 (92~160)
             int coinStartX = 126 - (coinCount * 9);
             for (int i = 0; i < coinCount; i++) {
                 builder.addSlot(RecipeIngredientRole.OUTPUT, coinStartX + (i * 18), 26)
@@ -93,11 +92,13 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
     @Override
     public void draw(MillTradeRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         Font font = Minecraft.getInstance().font;
-        // 渲染文化与商店来源
-        Component shopInfo = MillenaireJeimLocalizeHelper.getShopText(recipe.getCultureId(), recipe.getShopId());
+
+        // [新注释] 获取去重后的基础建筑 Key 集合 (如 ["castlepolish", "mansionpolish"])
+        Set<String> buildingKeys = MillenaireAPIHelper.getBuildingKeysByShopId(recipe.getCultureId(), recipe.getShopId());
+        Component shopInfo = buildShopSummaryComponent(recipe.getCultureId(), recipe.getShopId(), buildingKeys);
+
         guiGraphics.drawString(font, shopInfo, 5, 4, 0x404040, false);
 
-        // 若为可选购入，放置在第二行（X=5, Y=15）
         if (recipe.getTradeType() == MillTradeRecipe.TradeType.VILLAGE_BUYS_OPTIONAL) {
             Component optionalBuyComp = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_TRADE_OPTIONAL_BUY,
@@ -106,7 +107,6 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
             guiGraphics.drawString(font, optionalBuyComp, 5, 15, 0x888888, false);
         }
 
-        // 若存在最低声望要求，放置在底部（X=5, Y=48）
         if (recipe.getTradeGood().minReputation() > 0) {
             Component repInfo = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_TRADE_MIN_REPUTATION,
@@ -117,9 +117,58 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         }
     }
 
-    /**
-     * [新注释] 保持中央箭头绝对居中：160px 画布中心点 X=80 (起点 X=68, Y=26)
-     */
+    @Override
+    public void getTooltip(ITooltipBuilder tooltip, MillTradeRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        if (mouseX >= 5 && mouseX <= 155 && mouseY >= 2 && mouseY <= 14) {
+            Set<String> buildingKeys = MillenaireAPIHelper.getBuildingKeysByShopId(recipe.getCultureId(), recipe.getShopId());
+            if (buildingKeys.size() <= 1) {
+                return;
+            }
+
+            tooltip.add(Component.translatableWithFallback(
+                    MillenaireJeiKeys.KEY_TOOLTIP_BUILDINGS_HEADER,
+                    MillenaireJeiKeys.FALLBACK_TOOLTIP_BUILDINGS_HEADER
+            ));
+
+            for (String bKey : buildingKeys) {
+                // [新注释] 使用剥离后缀后的 bKey 获取正确的本地化名称
+                Component bName = MillenaireJeimLocalizeHelper.getBuildingText(recipe.getCultureId(), bKey);
+                tooltip.add(Component.translatableWithFallback(
+                        MillenaireJeiKeys.KEY_TOOLTIP_ITEM_ENTRY,
+                        MillenaireJeiKeys.FALLBACK_TOOLTIP_ITEM_ENTRY,
+                        bName
+                ));
+            }
+        }
+    }
+
+    private Component buildShopSummaryComponent(ResourceLocation cultureId, String shopId, Set<String> buildingKeys) {
+        if (cultureId == null || shopId == null) {
+            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_SHOP, MillenaireJeiKeys.FALLBACK_MISSING_SHOP);
+        }
+
+        MutableComponent cultureName = MillenaireLocalizeHelper.getCultureName(cultureId);
+
+        if (buildingKeys == null || buildingKeys.isEmpty()) {
+            return cultureName.append(" - ").append(MillenaireLocalizeHelper.getBuildingName(cultureId, shopId));
+        }
+
+        List<String> keyList = new ArrayList<>(buildingKeys);
+        String firstKey = keyList.get(0);
+        Component firstBuildingName = MillenaireLocalizeHelper.getBuildingName(cultureId, firstKey);
+
+        if (keyList.size() == 1) {
+            return cultureName.append(" - ").append(firstBuildingName);
+        } else {
+            String countSuffix = Component.translatableWithFallback(
+                    MillenaireJeiKeys.KEY_COUNT_PLACES,
+                    MillenaireJeiKeys.FALLBACK_COUNT_PLACES,
+                    keyList.size()
+            ).getString();
+            return cultureName.append(" - ").append(firstBuildingName).append(" ").append(countSuffix);
+        }
+    }
+
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, MillTradeRecipe recipe, IFocusGroup focuses) {
         builder.addRecipeArrow().setPosition(68, 26);
