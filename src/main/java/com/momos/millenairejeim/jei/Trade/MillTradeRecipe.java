@@ -1,5 +1,6 @@
 package com.momos.millenairejeim.jei.Trade;
 
+import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -38,7 +39,8 @@ public class MillTradeRecipe {
             TagKey<Item> tagKey = TagKey.create(Registries.ITEM, tradeGood.itemLocation());
             this.itemIngredient = Ingredient.of(tagKey);
         } else {
-            Item resolved = tradeGood.resolveItem();
+            /** 通过 {@link MillenaireAPIHelper#resolveTradeGoodItem(TradeGood)} 解析商品绑定的物品，*/
+            Item resolved = MillenaireAPIHelper.resolveTradeGoodItem(tradeGood);
             this.itemIngredient = (resolved != null) ? Ingredient.of(resolved) : Ingredient.EMPTY;
         }
 

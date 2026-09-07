@@ -21,7 +21,7 @@
   * 湿砖风干成干砖的状态变化逻辑，对应 JEI "自然风干" 分类。
 * `org.millenaire.block.BlockSilkWorm` & `org.millenaire.block.BlockSnailSoil`
   * 蚕架与蜗牛土方块的时序产出项（蚕丝、蜗牛）。
-### Villager Slaugtering 千年屠宰[最后做]
+### Villager Slaugtering 千年屠宰[不做]
 * 页签:`千年养殖`
 * `org.millenaire.block.mock.AnimalSpawnType`
   * 枚举类：定义建筑内标记的动物类型（如 `COW`, `PIG`, `CHICKEN`, `SHEEP` 等）。
@@ -70,3 +70,31 @@
 ## 记录
 * `java.lang.IllegalStateException: getWidth() and getHeight() must be overridden if background is null` 
   * TradeCategory 类中：JEI 要求当 getBackground() 返回 null 时，必须显式重写 getWidth() 与 getHeight() 方法返回 UI 的宽高
+* 调用链路1
+  ```txt
+    Map<ResourceLocation, VillagerType> allVillagerType = MillenaireAPIHelper.getAllVillagerType();
+    for (VillagerType vt : allVillagerType.values()){
+        // 村民自己拥有的目标
+        List<ResourceLocation> goals = vt.goals();
+        // 如果目标是制作什么东西，建筑可能会抑制村民目标的运行
+        // 这是多个建筑`json`文件的对象，对应村民Type所在的各个建筑
+        List<BuildingPlanSet> bps = MillenaireAPIHelper.MappingVillagerBuilding(vt);
+        // 这是一个建筑`json`文件的对象
+        for (BuildingPlanSet bp : bps){
+            // 这个映射是<a,变体1的声明>
+            Map<String, List<BuildingPlanSet.LevelDef>> variants = bp.variants();
+            // 这是具体变体的各个建筑等级
+            for (List<BuildingPlanSet.LevelDef> lds : variants.values()){
+                // 这是具体变体的一个建筑等级
+                for (BuildingPlanSet.LevelDef bl : lds){
+                    int l = bl.level(); // 这是等级
+                    // 这个映射是"sand,16",指的是在这个等级下可以制作，库存16个(不展示库存，只展示可合成性)
+                    // 被写入abstracted_production中会被阻碍？
+                    // 不对不对，抽象合成好像是`离线火星收益`？
+                    // 在`MarvelManager.java`中引用了`getAbstractedProduction`请求捐赠
+                    Map<String, Integer> ap = bl.abstractedProduction();
+                }
+            }
+        }
+    }
+  ```

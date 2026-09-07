@@ -1,9 +1,11 @@
 package com.momos.millenairejeim.jei.Trade;
 
-import mezz.jei.api.constants.VanillaTypes;
+import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -13,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
 
 /**
  * JEI 交易 Category 渲染器。
@@ -26,12 +27,12 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
     private final IDrawable icon;
     private final boolean isSellingCategory;
 
-    public MillTradeCategory(IGuiHelper guiHelper, RecipeType<MillTradeRecipe> recipeType, Component title, ItemStack iconStack, boolean isSellingCategory) {
+    public MillTradeCategory(IGuiHelper guiHelper, RecipeType<MillTradeRecipe> recipeType, Component title, IDrawable icon, boolean isSellingCategory) {
         this.recipeType = recipeType;
         this.title = title;
         this.isSellingCategory = isSellingCategory;
         this.background = guiHelper.createBlankDrawable(160, 60);
-        this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, iconStack);
+        this.icon = icon;
     }
 
     @Override
@@ -61,17 +62,30 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, MillTradeRecipe recipe, IFocusGroup focuses) {
+        int coinCount = recipe.getCoinStacks().size();
+
         if (isSellingCategory) {
-            // 千年售出：输入货币(n)，输出商品(1)
-            for (int i = 0; i < recipe.getCoinStacks().size(); i++) {
-                builder.addSlot(RecipeIngredientRole.INPUT, 10 + (i * 18), 30).addItemStack(recipe.getCoinStacks().get(i));
+            // [新注释] 售出模式：
+            // 左侧货币(n)：以左侧区域中心点 (X=34) 动态居中
+            int coinStartX = 34 - (coinCount * 9);
+            for (int i = 0; i < coinCount; i++) {
+                builder.addSlot(RecipeIngredientRole.INPUT, coinStartX + (i * 18), 26)
+                        .addItemStack(recipe.getCoinStacks().get(i));
             }
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 120, 30).addIngredients(recipe.getItemIngredient());
+            // 右侧商品(1)：在右侧区域中心点 (X=126) 居中，左上角起点 X=117
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 117, 26)
+                    .addIngredients(recipe.getItemIngredient());
         } else {
-            // 千年购入：输入商品(1)，输出货币(n)
-            builder.addSlot(RecipeIngredientRole.INPUT, 10, 30).addIngredients(recipe.getItemIngredient());
-            for (int i = 0; i < recipe.getCoinStacks().size(); i++) {
-                builder.addSlot(RecipeIngredientRole.OUTPUT, 80 + (i * 18), 30).addItemStack(recipe.getCoinStacks().get(i));
+            // [新注释] 收购模式：
+            // 左侧商品(1)：在左侧区域中心点 (X=34) 居中，左上角起点 X=25
+            builder.addSlot(RecipeIngredientRole.INPUT, 25, 26)
+                    .addIngredients(recipe.getItemIngredient());
+
+            // 右侧货币(n)：以右侧区域中心点 (X=126) 动态居中，3种货币时起点 X=99，完美收纳在右侧区域 (92~160)
+            int coinStartX = 126 - (coinCount * 9);
+            for (int i = 0; i < coinCount; i++) {
+                builder.addSlot(RecipeIngredientRole.OUTPUT, coinStartX + (i * 18), 26)
+                        .addItemStack(recipe.getCoinStacks().get(i));
             }
         }
     }
@@ -80,16 +94,34 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
     public void draw(MillTradeRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         Font font = Minecraft.getInstance().font;
         // 渲染文化与商店来源
-        String shopInfo = recipe.getCultureId().getPath() + " - " + recipe.getShopId();
-        guiGraphics.drawString(font, shopInfo, 5, 5, 0x404040, false);
-        // 若为可选购入，标记提示
+        Component shopInfo = MillenaireJeimLocalizeHelper.getShopText(recipe.getCultureId(), recipe.getShopId());
+        guiGraphics.drawString(font, shopInfo, 5, 4, 0x404040, false);
+
+        // 若为可选购入，放置在第二行（X=5, Y=15）
         if (recipe.getTradeType() == MillTradeRecipe.TradeType.VILLAGE_BUYS_OPTIONAL) {
-            guiGraphics.drawString(font, "(次要收购)", 100, 5, 0x888888, false);
+            Component optionalBuyComp = Component.translatableWithFallback(
+                    MillenaireJeiKeys.KEY_TRADE_OPTIONAL_BUY,
+                    MillenaireJeiKeys.FALLBACK_TRADE_OPTIONAL_BUY
+            );
+            guiGraphics.drawString(font, optionalBuyComp, 5, 15, 0x888888, false);
         }
-        // 若存在最低声望要求，进行文本渲染提示
+
+        // 若存在最低声望要求，放置在底部（X=5, Y=48）
         if (recipe.getTradeGood().minReputation() > 0) {
-            String repInfo = "需要声望: " + recipe.getTradeGood().minReputation();
+            Component repInfo = Component.translatableWithFallback(
+                    MillenaireJeiKeys.KEY_TRADE_MIN_REPUTATION,
+                    MillenaireJeiKeys.FALLBACK_TRADE_MIN_REPUTATION,
+                    recipe.getTradeGood().minReputation()
+            );
             guiGraphics.drawString(font, repInfo, 5, 48, 0xAA0000, false);
         }
+    }
+
+    /**
+     * [新注释] 保持中央箭头绝对居中：160px 画布中心点 X=80 (起点 X=68, Y=26)
+     */
+    @Override
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, MillTradeRecipe recipe, IFocusGroup focuses) {
+        builder.addRecipeArrow().setPosition(68, 26);
     }
 }

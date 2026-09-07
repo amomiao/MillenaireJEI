@@ -1,8 +1,8 @@
 package com.momos.millenairejeim.jei.Trade;
 
+import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import net.minecraft.world.item.ItemStack;
 import org.millenaire.commerce.TradeGood;
-import org.millenaire.item.ModItems;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,15 +30,14 @@ public final class CoinHelper {
         int remainderAfterGold = totalDenier % RATIO_GOLD;
         int silver = remainderAfterGold / RATIO_SILVER;
         int bronze = remainderAfterGold % RATIO_SILVER;
-
         if (gold > 0) {
-            coins.add(new ItemStack(ModItems.DENIER_OR.get(), gold));
+            coins.add(MillenaireAPIHelper.getDenierOrStack(gold));
         }
         if (silver > 0) {
-            coins.add(new ItemStack(ModItems.DENIER_ARGENT.get(), silver));
+            coins.add(MillenaireAPIHelper.getDenierArgentStack(silver));
         }
         if (bronze > 0) {
-            coins.add(new ItemStack(ModItems.DENIER.get(), bronze));
+            coins.add(MillenaireAPIHelper.getDenierStack(bronze));
         }
         return coins;
     }
