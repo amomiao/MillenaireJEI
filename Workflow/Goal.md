@@ -1,4 +1,21 @@
 # Human Claw Runtime
+## Workflow
+* Q1:根据对HandlerParams的使用，哪些对象应该被归为一组? [附件](GatheringHandlerParamsLootReport.md)
+  1. 显式战利品列表组（loot 驱动）归类对象：mining、fishing、fishing_inuit。  
+     * 核心特征：显式配置 loot 数组，直接通过 item 与 count 声明产出物品和数量
+  2. 方块成熟与采摘组（方块状态驱动）归类对象：harvesting、fruit_harvesting、cocoa_harvesting。  
+     * 核心特征：围绕 targetBlock 进行目标判定；结合成熟度与年龄（如 targetState.age 或 ripeAge/resetAge）；产出依赖方块自掉落或显式的 harvestItem+harvestCount，部分作物支持 irrigationBonusCrop 灌溉奖励。
+  3. 动物与生物行为组（实体参数驱动）归类对象：slaughter、breeding、shearing。  
+     * 核心特征：依赖 animalType、buildingTag 或 requiredTag 等实体及区域属性；不使用通用 loot 结构，行为由生物机制控制（如屠宰使用 bonusItems 概率掉落、繁殖使用 foodItems）。
+  4. ~~区域绑定与环境交互组（世界规则驱动）归类对象：chopping。~~(提示砍树给木头没意义)
+     * 核心特征：仅声明 buildingTag 用于绑定工作区域；完全不配置任何物品掉落参数，产出由世界方块被破坏时的原生掉落逻辑决定。
+* 给 4个`MillCrafting`、3个`type.base`以及`GoalCraftingRecipe`作为案例,尝试生成的一个新类型`Recipe`,还需要什么文件请告知后再进行;
+* Q2:尝试生成的一个新类型`GoalLootRecipe`,还需要什么文件请告知后再进行;
+  * 在开始为您生成 GoalLootRecipe.java 之前，请告知您希望采用哪种 JEI 显示架构，您偏向采用 选项 A（单页签） 还是 选项 B（独立页签）？
+* Q3:不用改MillenaireJeiPlugin，和GoalCraftingRecipe渲染在同一个页签下
+* Q4:/** 3.各种收割行为 */ public static final Set<String> HarvestTypeSet = Set.of("harvesting","fruit_harvesting","cocoa_harvesting"); 新增了字段，生成对应的Recipe，可以多留下一些内容方便以后拓展
+* Q5:/** 4.与实体的各种行为 */ public static final Set<String> OfEntityTypeSet =Set.of("slaughter","breeding","shearing"); 新增了字段，生成对应的Recipe，可以多留下一些内容方便以后拓展
+
 ## 总之先理一下Goal
 * Goal类型:`org.millenaire.goal.gathering.GatheringHandlerRegistry`
   * 所有继承了`org.millenaire.goal.gathering.handler.AbstractGatheringHandler`的内容在这里进行了注册,

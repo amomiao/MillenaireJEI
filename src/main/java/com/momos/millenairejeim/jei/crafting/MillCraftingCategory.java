@@ -142,11 +142,25 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
             animatedArrow.draw(guiGraphics, 72, 15);
         }
 
+        // 3. 构建制作类型文本（通过 handlerId 判断类型，兼容多态显示）
+        String handlerId = recipe.getHandlerId() != null ? recipe.getHandlerId().toLowerCase() : "crafting";
+        String craftingTypeKey = String.format(MillenaireJeiKeys.TEMPLATE_CRAFTING_TYPE, handlerId);
+
         // 3. 构建制作类型文本（通过 handlerId 判断类型）
-        boolean isSmelting = "smelting".equalsIgnoreCase(recipe.getHandlerId());
-        String rawCraftingType = isSmelting ? "smelting" : "crafting";
-        String craftingTypeKey = String.format(MillenaireJeiKeys.TEMPLATE_CRAFTING_TYPE, rawCraftingType);
-        Component localizedCraftingType = Component.translatableWithFallback(craftingTypeKey, isSmelting ? "冶炼/烹饪" : "村民手工");
+        // [新注释] 针对各种 Handler 类型提供回退默认显示名称
+        String fallbackTypeName;
+        switch (handlerId) {
+            case "smelting" -> fallbackTypeName = "冶炼/烹饪";
+            case "mining" -> fallbackTypeName = "采矿/挖掘";
+            case "fishing", "fishing_inuit" -> fallbackTypeName = "捕鱼/钓鱼";
+            case "harvesting", "fruit_harvesting", "cocoa_harvesting" -> fallbackTypeName = "农作收割/果树采摘";
+            case "slaughter" -> fallbackTypeName = "畜牧/屠宰";
+            case "breeding" -> fallbackTypeName = "动物繁殖";
+            case "shearing" -> fallbackTypeName = "动物剪毛";
+            default -> fallbackTypeName = "村民手工";
+        }
+
+        Component localizedCraftingType = Component.translatableWithFallback(craftingTypeKey, fallbackTypeName);
         String rawGoalKey = recipe.getGoalKey() != null ? recipe.getGoalKey() : (recipe.getId() != null ? recipe.getId().getPath() : "unknown");
         Component localizedGoalName = MillenaireLocalizeHelper.getGoalName(rawGoalKey);
         String formattedCraftingType = localizedCraftingType.getString() + " - " + localizedGoalName.getString();

@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
  * 对应 handler: "crafting", "smelting" 的配方实体。
  * 纯数据模型，渲染与 Tooltip 全量交由 {@link com.momos.millenairejeim.jei.crafting.MillCraftingCategory} 负责。
  */
-public class StandardCraftingRecipe extends MillBaseRecipe {
+public class GoalCraftingRecipe extends MillBaseRecipe {
 
     private final boolean isSmelting;
 
-    public StandardCraftingRecipe(ResourceLocation id, String goalKey, String handlerId,
-                                  List<IngredientWithCount> inputs, List<ItemStack> outputs,
-                                  List<ItemStack> catalysts, List<VillagerType> villagerTypes, boolean isSmelting) {
+    public GoalCraftingRecipe(ResourceLocation id, String goalKey, String handlerId,
+                              List<IngredientWithCount> inputs, List<ItemStack> outputs,
+                              List<ItemStack> catalysts, List<VillagerType> villagerTypes, boolean isSmelting) {
         super(id, goalKey, handlerId, inputs, outputs, catalysts, villagerTypes);
         this.isSmelting = isSmelting;
     }
@@ -55,13 +55,13 @@ public class StandardCraftingRecipe extends MillBaseRecipe {
         }
 
         /**
-         * 解析 {@link GatheringType} 并生成 {@link StandardCraftingRecipe} 实例。
+         * 解析 {@link GatheringType} 并生成 {@link GoalCraftingRecipe} 实例。
          *
          * @param type 底层千年 Goal 采集/加工类型数据实体 {@link GatheringType}
          * @param villagers 具备执行此动作能力的村民类型 {@link VillagerType} 列表
-         * @return 转换后的配方实体 {@link StandardCraftingRecipe}，解析失败或为空时返回 {@code null}
+         * @return 转换后的配方实体 {@link GoalCraftingRecipe}，解析失败或为空时返回 {@code null}
          */
-        public StandardCraftingRecipe parse(GatheringType type, List<VillagerType> villagers) {
+        public GoalCraftingRecipe parse(GatheringType type, List<VillagerType> villagers) {
             if (type == null) return null;
 
             JsonObject params = type.handlerParams();
@@ -83,7 +83,7 @@ public class StandardCraftingRecipe extends MillBaseRecipe {
             String handlerId = type.handlerId();
             boolean isSmelting = "smelting".equalsIgnoreCase(handlerId);
 
-            return new StandardCraftingRecipe(type.id(), goalKey, handlerId, inputs, outputs, List.of(), villagers, isSmelting);
+            return new GoalCraftingRecipe(type.id(), goalKey, handlerId, inputs, outputs, List.of(), villagers, isSmelting);
         }
     }
 }

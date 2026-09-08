@@ -1,7 +1,7 @@
 package com.momos.millenairejeim.jei.crafting;
 
 import com.momos.millenairejeim.jei.MillenaireJeiPlugin;
-import com.momos.millenairejeim.jei.crafting.type.StandardCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.GoalCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.AbstractMillCraftingType;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.MillBaseRecipe;
@@ -28,19 +28,23 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
             "crafting",
             "smelting"
     );
-    /** 2. 农林采掘与生产类 Handlers */
-    public static final Set<String> FARMING_HANDLER_IDS = Set.of(
-            "farming",
+    /** 2.战利品表:依赖item和count字段及其战利品表 */
+    public static final Set<String> LootTypeSet = Set.of(
             "mining",
-            "chopping",
-            "woodcutting"
-    );
-    /** 3. 采集、渔猎与屠宰类 Handlers */
-    public static final Set<String> GATHERING_HANDLER_IDS = Set.of(
-            "gathering",
             "fishing",
-            "hunting",
-            "slaughtering"
+            "fishing_inuit"
+    );
+    /** 3.各种收割行为 */
+    public static final Set<String> HarvestTypeSet = Set.of(
+            "harvesting",
+            "fruit_harvesting",
+            "cocoa_harvesting"
+    );
+    /** 4.与实体的各种行为 */
+    public static final Set<String> OfEntityTypeSet =Set.of(
+            "slaughter",
+            "breeding",
+            "shearing"
     );
 
     private List<IMillRecipe> cachedRecipes = null;
@@ -62,9 +66,9 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
     /// 1.2-对Goal进行解析 [MillCraftingRecipeMaker#getRecipesByHandlers],`Goal`类型与对应类型匹配如[#CraftTypeSet]的对象会被解析
     /// 1.3-得到真的被激活的`Goal`[GoalRegistry#getGatheringGoals]
     /// 1.4-遍历对每个`Goal`解析,但此方法只是一个分发[MillCraftingRecipe#parse]
-    /// 1.4.1-如[StandardCraftingRecipe],他的父类为[MillBaseRecipe]祖类为[IMillRecipe],他有内部类[StandardCraftingRecipe.Parser]此内部类继承[AbstractMillCraftingType]
-    /// 1.4.2-[MillCraftingRecipe#parse]分发时会调用[StandardCraftingRecipe.Parser#supports]检查解析是否由[StandardCraftingRecipe]进行
-    /// 1.4.3-通过[StandardCraftingRecipe.Parser#parse]完成一条内容的解析，方法是`非空`并且匹配[#CraftTypeSet]
+    /// 1.4.1-如[GoalCraftingRecipe],他的父类为[MillBaseRecipe]祖类为[IMillRecipe],他有内部类[GoalCraftingRecipe.Parser]此内部类继承[AbstractMillCraftingType]
+    /// 1.4.2-[MillCraftingRecipe#parse]分发时会调用[GoalCraftingRecipe.Parser#supports]检查解析是否由[GoalCraftingRecipe]进行
+    /// 1.4.3-通过[GoalCraftingRecipe.Parser#parse]完成一条内容的解析，方法是`非空`并且匹配[#CraftTypeSet]
     /// 1.5-遍历完成获得解析结果 [#cachedRecipes]
     /// 2.1-告知渲染对象 [#getRecipes(IRecipeCategory<T>,IFocus<V>)]
     /// 2.2-通过预设,渲染一些内容 [MillCraftingCategory#setRecipe]

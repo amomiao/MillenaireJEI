@@ -23,43 +23,25 @@ import java.util.Set;
  * [新注释] 已重构为四大 JEI 分类分流架构，支持分别获取手工、冶炼、农林采掘与采集捕捞四大类配方。
  */
 public class MillCraftingRecipeMaker {
-    // region 1. 门面分类 Handler 定义与容器结构
-    /** 四大分类配方数据容器，方便 JEI Plugin 一次性获取分流后的全部配方列表。*/
-    public record CategorizedRecipes(
-            List<IMillRecipe> craftingRecipes,
-            List<IMillRecipe> farmingRecipes,
-            List<IMillRecipe> gatheringRecipes
-    ) {}
-    // endregion 1. 门面分类 Handler 定义与容器结构
-
-
-    // region 2. 四大分类 JEI 配方提取对外 API
-    /**
-     * [新注释] 初始化并提取全部四大分类的配方数据，包装为 {@link CategorizedRecipes} 容器返回。
-     * @param activeRegistry 激活的 {@link GoalRegistry} 实例
-     * @return 包含四大分类配方列表的 {@link CategorizedRecipes} 实体
-     */
-    public static CategorizedRecipes initCategorizedRecipes(GoalRegistry activeRegistry) {
-        return new CategorizedRecipes(
-                getCraftingRecipes(activeRegistry),
-                getFarmingRecipes(activeRegistry),
-                getGatheringRecipes(activeRegistry)
-        );
-    }
-
-    /** 初始化获得条目 */
-    public static List<IMillRecipe> initRecipes(GoalRegistry activeRegistry) {
-        // 保持兼容：默认合并提取手工与冶炼两大核心配方分类
-        List<IMillRecipe> recipes = new ArrayList<>();
-        recipes.addAll(getCraftingRecipes(activeRegistry));
-        return recipes;
-    }
     /** 提取【村民手工与合成】分类配方列表，对接 JEI 的 Crafting Category。*/
     public static List<IMillRecipe> getCraftingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.CraftTypeSet);}
     /** 提取【农林采掘与生产】分类配方列表，对接 JEI 的 Farming/Mining Category。*/
-    public static List<IMillRecipe> getFarmingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.FARMING_HANDLER_IDS);}
-    /** 提取【采集、渔猎与屠宰】分类配方列表，对接 JEI 的 Gathering Category。*/
-    public static List<IMillRecipe> getGatheringRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.GATHERING_HANDLER_IDS);}
+    public static List<IMillRecipe> getLootTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.LootTypeSet);}
+    /** 提取【农林收割与采摘】分类配方列表 */
+    public static List<IMillRecipe> getHarvestTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.HarvestTypeSet);}
+    /** 提取【实体交互与牧业】分类配方列表 */
+    public static List<IMillRecipe> getOfEntityTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.OfEntityTypeSet);}
+
+    /** 初始化获得条目 */
+    public static List<IMillRecipe> initRecipes(GoalRegistry activeRegistry) {
+        // [新注释] 合并提取手工、冶炼、采掘以及农林收割等全部单页签配方
+        List<IMillRecipe> recipes = new ArrayList<>();
+        recipes.addAll(getCraftingRecipes(activeRegistry));
+        recipes.addAll(getLootTypeSetRecipes(activeRegistry));
+        recipes.addAll(getHarvestTypeSetRecipes(activeRegistry));
+        recipes.addAll(getOfEntityTypeSetRecipes(activeRegistry));
+        return recipes;
+    }
 
     // [新注释] 提供最少 API：按单个 targetHandlerId 过滤提取配方，方便前端 JEI 分类页面接手挂载
     /**
