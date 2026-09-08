@@ -148,19 +148,12 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
 
         // 3. 构建制作类型文本（通过 handlerId 判断类型）
         // [新注释] 针对各种 Handler 类型提供回退默认显示名称
-        String fallbackTypeName;
-        switch (handlerId) {
-            case "smelting" -> fallbackTypeName = "冶炼/烹饪";
-            case "mining" -> fallbackTypeName = "采矿/挖掘";
-            case "fishing", "fishing_inuit" -> fallbackTypeName = "捕鱼/钓鱼";
-            case "harvesting", "fruit_harvesting", "cocoa_harvesting" -> fallbackTypeName = "农作收割/果树采摘";
-            case "slaughter" -> fallbackTypeName = "畜牧/屠宰";
-            case "breeding" -> fallbackTypeName = "动物繁殖";
-            case "shearing" -> fallbackTypeName = "动物剪毛";
-            default -> fallbackTypeName = "村民手工";
-        }
-
-        Component localizedCraftingType = Component.translatableWithFallback(craftingTypeKey, fallbackTypeName);
+        /*
+         * [醒目新注释] 替换原有硬编码中文 Switch 判断。
+         * 改为直接调用 {@link MillenaireLocalizeHelper#getCraftingTypeName(String)} 获取规范的本地化 Component，
+         * 完美兼顾多语言语言包加载与标准英文 Fallback。
+         */
+        Component localizedCraftingType = MillenaireLocalizeHelper.getCraftingTypeName(handlerId);
         String rawGoalKey = recipe.getGoalKey() != null ? recipe.getGoalKey() : (recipe.getId() != null ? recipe.getId().getPath() : "unknown");
         Component localizedGoalName = MillenaireLocalizeHelper.getGoalName(rawGoalKey);
         String formattedCraftingType = localizedCraftingType.getString() + " - " + localizedGoalName.getString();
@@ -272,3 +265,4 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
         }
     }
 }
+// endregion MillCraftingCategory.java

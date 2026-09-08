@@ -64,7 +64,7 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
     /// 首次查询
     /// 1.1-初始化入口 [MillCraftingRecipeMaker#initRecipes]
     /// 1.2-对Goal进行解析 [MillCraftingRecipeMaker#getRecipesByHandlers],`Goal`类型与对应类型匹配如[#CraftTypeSet]的对象会被解析
-    /// 1.3-得到真的被激活的`Goal`[GoalRegistry#getGatheringGoals]
+    /// 1.3-得到被激活的有效`Goal`[GoalRegistry#getGatheringGoals]
     /// 1.4-遍历对每个`Goal`解析,但此方法只是一个分发[MillCraftingRecipe#parse]
     /// 1.4.1-如[GoalCraftingRecipe],他的父类为[MillBaseRecipe]祖类为[IMillRecipe],他有内部类[GoalCraftingRecipe.Parser]此内部类继承[AbstractMillCraftingType]
     /// 1.4.2-[MillCraftingRecipe#parse]分发时会调用[GoalCraftingRecipe.Parser#supports]检查解析是否由[GoalCraftingRecipe]进行

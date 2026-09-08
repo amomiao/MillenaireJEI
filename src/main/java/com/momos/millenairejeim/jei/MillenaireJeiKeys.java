@@ -127,4 +127,16 @@ public final class MillenaireJeiKeys {
     /** Tooltip 细项列表通用格式 Key (%s 代表名称) */
     public static final String KEY_TOOLTIP_ITEM_ENTRY = "jei.millenaire.crafting.tooltip.item_entry";
     public static final String FALLBACK_TOOLTIP_ITEM_ENTRY = "§7• %s";
+
+    /* ========================================================================= */
+    /* 6. 工艺 Handler 类型英文回退文本 (Fallback)                                 */
+    /* ========================================================================= */
+    public static final String FALLBACK_CRAFTING_TYPE_SMELTING = "Smelting / Cooking";
+    public static final String FALLBACK_CRAFTING_TYPE_MINING = "Mining / Excavation";
+    public static final String FALLBACK_CRAFTING_TYPE_FISHING = "Fishing";
+    public static final String FALLBACK_CRAFTING_TYPE_HARVESTING = "Farming / Harvesting";
+    public static final String FALLBACK_CRAFTING_TYPE_SLAUGHTER = "Slaughter / Animal Husbandry";
+    public static final String FALLBACK_CRAFTING_TYPE_BREEDING = "Animal Breeding";
+    public static final String FALLBACK_CRAFTING_TYPE_SHEARING = "Animal Shearing";
+    public static final String FALLBACK_CRAFTING_TYPE_DEFAULT = "Villager Crafting";
 }

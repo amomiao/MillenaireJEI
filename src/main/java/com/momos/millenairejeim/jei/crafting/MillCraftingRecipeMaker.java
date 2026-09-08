@@ -71,10 +71,12 @@ public class MillCraftingRecipeMaker {
         List<IMillRecipe> recipes = new ArrayList<>();
         if (activeRegistry == null) {
             // [新注释] 使用 MMLog.warn 输出三语警告日志
+            // [醒目新注释] 追加 targetHandlerIds 参数，便于定位目标集合为空时引发注册中断的上下文
             MMLog.warn(
-                    "[Millenaire-JEI] GoalRegistry 实例为空！无法加载千年工艺配方，请检查 MillenaireJeiPlugin.setGoalRegistry() 的赋值时机。",
-                    "[Millenaire-JEI] GoalRegistry instance is null! Unable to load Millénaire crafting recipes. Please check the timing of MillenaireJeiPlugin.setGoalRegistry().",
-                    "[Millenaire-JEI] L'instance GoalRegistry est nulle ! Impossible de charger les recettes de fabrication Millénaire, veuillez vérifier le moment de l'affectation de MillenaireJeiPlugin.setGoalRegistry()."
+                    "[Millenaire-JEI] GoalRegistry 实例为空！无法加载千年工艺配方，目标 Handlers: {}，请检查 MillenaireJeiPlugin.setGoalRegistry() 的赋值时机。",
+                    "[Millenaire-JEI] GoalRegistry instance is null! Unable to load Millénaire crafting recipes for target Handlers: {}. Please check the timing of MillenaireJeiPlugin.setGoalRegistry().",
+                    "[Millenaire-JEI] L'instance GoalRegistry est nulle ! Impossible de charger les recettes de fabrication Millénaire pour les Handlers cibles : {}. Veuillez vérifier le moment de l'affectation de MillenaireJeiPlugin.setGoalRegistry().",
+                    targetHandlerIds
             );
             return recipes;
         }
@@ -82,18 +84,21 @@ public class MillCraftingRecipeMaker {
         List<GatheringGoal> gatheringGoals = activeRegistry.getGatheringGoals();
 
         int totalGoals = gatheringGoals != null ? gatheringGoals.size() : 0;
+        // [醒目新注释] 日志中增加 targetHandlerIds 打印，清晰展现当前调用的 Handlers 集合
         MMLog.info(
-                "[Millenaire-JEI] 开始解析千年工艺配方，获取到的 GatheringGoal 总数: {}",
-                "[Millenaire-JEI] Starting parsing Millénaire crafting recipes. Total GatheringGoals fetched: {}",
-                "[Millenaire-JEI] Début de l'analyse des recettes de fabrication Millénaire, nombre total de GatheringGoal obtenus : {}",
-                totalGoals
+                "[Millenaire-JEI] 开始解析千年工艺配方，目标 Handlers: {}, 获取到的 GatheringGoal 总数: {}",
+                "[Millenaire-JEI] Starting parsing Millénaire crafting recipes. Target Handlers: {}, Total GatheringGoals fetched: {}",
+                "[Millenaire-JEI] Début de l'analyse des recettes de fabrication Millénaire, Handlers cibles : {}, nombre total de GatheringGoal obtenus : {}",
+                targetHandlerIds, totalGoals
         );
 
         if (gatheringGoals == null || gatheringGoals.isEmpty()) {
+            // [醒目新注释] 警告日志追加 targetHandlerIds，指示数据源为空时对应的分类类别
             MMLog.warn(
-                    "[Millenaire-JEI] GatheringGoal 列表为空，未找到任何采集与加工 Goal 数据！",
-                    "[Millenaire-JEI] GatheringGoal list is empty, no gathering or processing Goal data found!",
-                    "[Millenaire-JEI] La liste GatheringGoal est vide, aucune donnée Goal de collecte ou de fabrication trouvée !"
+                    "[Millenaire-JEI] GatheringGoal 列表为空，未找到任何采集与加工 Goal 数据！目标 Handlers: {}",
+                    "[Millenaire-JEI] GatheringGoal list is empty, no gathering or processing Goal data found! Target Handlers: {}",
+                    "[Millenaire-JEI] La liste GatheringGoal est vide, aucune donnée Goal de collecte ou de fabrication trouvée ! Handlers cibles : {}",
+                    targetHandlerIds
             );
             return recipes;
         }
@@ -142,25 +147,29 @@ public class MillCraftingRecipeMaker {
             }
         }
 
+        // [醒目新注释] 统计日志中补充打印 targetHandlerIds 集合内容
         MMLog.info(
-                "[Millenaire-JEI] 配方提取完成。匹配目标 Handler: {} 个，成功解析配方: {} 个。",
-                "[Millenaire-JEI] Recipe extraction complete. Matched target Handlers: {}, successfully parsed recipes: {}.",
-                "[Millenaire-JEI] Extraction des recettes terminée. Handlers cibles correspondants : {}, recettes analysées avec succès : {}.",
-                matchedCount, parsedCount
+                "[Millenaire-JEI] 配方提取完成。目标 Handlers: {}, 匹配: {} 个，成功解析配方: {} 个。",
+                "[Millenaire-JEI] Recipe extraction complete. Target Handlers: {}, matched: {}, successfully parsed recipes: {}.",
+                "[Millenaire-JEI] Extraction des recettes terminée. Handlers cibles : {}, correspondants : {}, recettes analysées avec succès : {}.",
+                targetHandlerIds, matchedCount, parsedCount
         );
 
         if (!recipes.isEmpty()) {
+            // [醒目新注释] 成功注册日志补充打印 targetHandlerIds
             MMLog.info(
-                    "[Millenaire-JEI] 已向 JEI 成功注册 {} 个千年工艺/加工配方！",
-                    "[Millenaire-JEI] Successfully registered {} Millénaire crafting/processing recipes to JEI!",
-                    "[Millenaire-JEI] Enregistrement réussi de {} recettes de fabrication/cuisine Millénaire dans JEI !",
-                    recipes.size()
+                    "[Millenaire-JEI] 已向 JEI 成功注册 {} 个千年工艺/加工配方！目标 Handlers: {}",
+                    "[Millenaire-JEI] Successfully registered {} Millénaire crafting/processing recipes to JEI! Target Handlers: {}",
+                    "[Millenaire-JEI] Enregistrement réussi de {} recettes de fabrication/cuisine Millénaire dans JEI ! Handlers cibles : {}",
+                    recipes.size(), targetHandlerIds
             );
         } else {
+            // [醒目新注释] 提示隐藏页签时精准打印出空配方的 targetHandlerIds 集合
             MMLog.warn(
-                    "[Millenaire-JEI] 最终生成的配方列表为空，JEI 将自动隐藏该 Category 页签！",
-                    "[Millenaire-JEI] The final generated recipe list is empty. JEI will automatically hide this Category tab!",
-                    "[Millenaire-JEI] La liste finale des recettes générées est vide, JEI masquera automatiquement cet onglet de catégorie !"
+                    "[Millenaire-JEI] 目标 Handlers {} 最终生成的配方列表为空，JEI 将自动隐藏该 Category 页签！",
+                    "[Millenaire-JEI] The final generated recipe list for target Handlers {} is empty. JEI will automatically hide this Category tab!",
+                    "[Millenaire-JEI] La liste finale des recettes générées pour les Handlers cibles {} est vide, JEI masquera automatiquement cet onglet de catégorie !",
+                    targetHandlerIds
             );
         }
         return recipes;
