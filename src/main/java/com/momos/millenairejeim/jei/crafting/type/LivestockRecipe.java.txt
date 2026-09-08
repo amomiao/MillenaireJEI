@@ -1,0 +1,91 @@
+package com.momos.millenairejeim.jei.crafting.type;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import org.millenaire.culture.VillagerType;
+import org.millenaire.goal.gathering.GatheringType;
+import org.millenaire.item.ItemHelper;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 对应 handler: "slaughter", "breeding", "shearing" 的牧场行为配方。
+ */
+public class LivestockRecipe extends MillBaseRecipe {
+
+    private final String animalType;
+    private final List<BonusItem> bonusItems;
+
+    public record BonusItem(ItemStack stack, int chance) {}
+
+    public LivestockRecipe(ResourceLocation id, String goalKey, String handlerId,
+                           List<IngredientWithCount> inputs, List<ItemStack> outputs,
+                           List<ItemStack> catalysts, List<VillagerType> villagerTypes,
+                           String animalType, List<BonusItem> bonusItems) {
+        super(id, goalKey, handlerId, inputs, outputs, catalysts, villagerTypes);
+        this.animalType = animalType;
+        this.bonusItems = bonusItems != null ? bonusItems : List.of();
+    }
+
+    public String getAnimalType() { return animalType; }
+    public List<BonusItem> getBonusItems() { return bonusItems; }
+
+    @Override
+    public void draw(MillCraftingCategory category, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        Font font = Minecraft.getInstance().font;
+        guiGraphics.drawString(font, "牧场处理: " + (animalType != null ? animalType : "家畜"), 50, 5, 0xB22222, false);
+        if (!bonusItems.isEmpty()) {
+            guiGraphics.drawString(font, "概率掉落物: " + bonusItems.size() + " 种", 50, 16, 0x666666, false);
+        }
+    }
+
+    /** 静态解析器实现 */
+    public static class Parser implements IMillRecipeParser {
+        private static final List<String> HANDLERS = List.of("slaughter", "breeding", "shearing");
+
+        @Override
+        public boolean supports(String handlerId, GatheringType type) {
+            return HANDLERS.contains(handlerId);
+        }
+
+        @Override
+        public IMillRecipe parse(GatheringType type, List<VillagerType> villagers) {
+            JsonObject params = type.handlerParams();
+            if (params == null) return null;
+
+            List<ItemStack> outputs = new ArrayList<>();
+            List<BonusItem> bonusItems = new ArrayList<>();
+
+            if (params.has("bonusItems")) {
+                for (JsonElement elem : params.getAsJsonArray("bonusItems")) {
+                    if (!elem.isJsonObject()) continue;
+                    JsonObject obj = elem.getAsJsonObject();
+                    String itemId = GsonHelper.getAsString(obj, "item");
+                    int chance = GsonHelper.getAsInt(obj, "chance", 100);
+                    Item item = ItemHelper.resolve(itemId);
+                    if (item != null && item != Items.AIR) {
+                        ItemStack stack = new ItemStack(item);
+                        outputs.add(stack);
+                        bonusItems.add(new BonusItem(stack, chance));
+                    }
+                }
+            }
+
+            String animalType = params.has("animalType") ? params.get("animalType").getAsString() : null;
+            String goalKey = type.id() != null ? type.id().getPath() : "unknown";
+
+            return new LivestockRecipe(type.id(), goalKey, type.handlerId(), List.of(), outputs, List.of(), villagers, animalType, bonusItems);
+        }
+    }
+}

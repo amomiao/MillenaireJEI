@@ -1,6 +1,7 @@
 package com.momos.millenairejeim.jei.crafting;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
 import com.momos.millenairejeim.util.MMLog;
 import net.minecraft.resources.ResourceLocation;
 import org.millenaire.culture.VillagerType;
@@ -16,28 +17,76 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 千年工艺与烹饪配方提取工厂。
- * 从 {@link GoalRegistry} 中提取包含合成、烹饪、冶炼等转换类 Handlers 的 {@link GatheringGoal}。
+ * 千年工艺与加工配方提取工厂。
+ * 从 {@link GoalRegistry} 中提取包含合成、烹饪、冶炼、农艺、采矿等转换类 Handlers 的 {@link GatheringGoal}。
+ * <p>
+ * [新注释] 已重构为四大 JEI 分类分流架构，支持分别获取手工、冶炼、农林采掘与采集捕捞四大类配方。
  */
 public class MillCraftingRecipeMaker {
+    // region 1. 门面分类 Handler 定义与容器结构
+    /** 四大分类配方数据容器，方便 JEI Plugin 一次性获取分流后的全部配方列表。*/
+    public record CategorizedRecipes(
+            List<IMillRecipe> craftingRecipes,
+            List<IMillRecipe> farmingRecipes,
+            List<IMillRecipe> gatheringRecipes
+    ) {}
+    // endregion 1. 门面分类 Handler 定义与容器结构
 
-    // -----------------------------------------------------------------------------------
-    // [新注释] 移除原 SLF4J Logger 静态定义，全面转用 {@link MMLog} 工具类以实现三语（中/英/法）控制台日志输出。
-    // -----------------------------------------------------------------------------------
 
+    // region 2. 四大分类 JEI 配方提取对外 API
     /**
-     * 支持转换为 JEI 配方的 Handler ID 集合（涵盖通用合成、烹饪、烘焙与冶炼）
+     * [新注释] 初始化并提取全部四大分类的配方数据，包装为 {@link CategorizedRecipes} 容器返回。
+     * @param activeRegistry 激活的 {@link GoalRegistry} 实例
+     * @return 包含四大分类配方列表的 {@link CategorizedRecipes} 实体
      */
-    private static final Set<String> CRAFTING_HANDLER_IDS = Set.of(
-            "crafting",
-            "cooking",
-            "baking",
-            "smelting"
-    );
+    public static CategorizedRecipes initCategorizedRecipes(GoalRegistry activeRegistry) {
+        return new CategorizedRecipes(
+                getCraftingRecipes(activeRegistry),
+                getFarmingRecipes(activeRegistry),
+                getGatheringRecipes(activeRegistry)
+        );
+    }
 
     /** 初始化获得条目 */
-    public static List<MillCraftingRecipe> initRecipes(GoalRegistry activeRegistry) {
-        List<MillCraftingRecipe> recipes = new ArrayList<>();
+    public static List<IMillRecipe> initRecipes(GoalRegistry activeRegistry) {
+        // 保持兼容：默认合并提取手工与冶炼两大核心配方分类
+        List<IMillRecipe> recipes = new ArrayList<>();
+        recipes.addAll(getCraftingRecipes(activeRegistry));
+        return recipes;
+    }
+    /** 提取【村民手工与合成】分类配方列表，对接 JEI 的 Crafting Category。*/
+    public static List<IMillRecipe> getCraftingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.CraftTypeSet);}
+    /** 提取【农林采掘与生产】分类配方列表，对接 JEI 的 Farming/Mining Category。*/
+    public static List<IMillRecipe> getFarmingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.FARMING_HANDLER_IDS);}
+    /** 提取【采集、渔猎与屠宰】分类配方列表，对接 JEI 的 Gathering Category。*/
+    public static List<IMillRecipe> getGatheringRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.GATHERING_HANDLER_IDS);}
+
+    // [新注释] 提供最少 API：按单个 targetHandlerId 过滤提取配方，方便前端 JEI 分类页面接手挂载
+    /**
+     * 根据指定的 Handler ID 提取对应配方列表。
+     * @param activeRegistry 激活的 {@link GoalRegistry} 实例
+     * @param targetHandlerId 目标 handler 标识，例如 "crafting" 或 "smelting"
+     * @return 解析后的 {@link IMillRecipe} 列表
+     */
+    public static List<IMillRecipe> getRecipesByHandler(GoalRegistry activeRegistry, String targetHandlerId) {
+        if (targetHandlerId == null || targetHandlerId.isBlank()) {
+            return List.of();
+        }
+        return getRecipesByHandlers(activeRegistry, Set.of(targetHandlerId.toLowerCase()));
+    }
+    // endregion 2. 四大分类 JEI 配方提取对外 API
+
+    // region 3. 核心配方提取与匹配通用逻辑
+    // [新注释] 提供最少 API：按 handlerIds 集合 numerically 精准批量提取配方
+    /**
+     * 根据指定的 Handler ID 集合提取对应的 JEI 配方列表。
+     *
+     * @param activeRegistry 激活的 {@link GoalRegistry} 实例
+     * @param targetHandlerIds 目标 handler 标识集合 {@link Set}
+     * @return 解析后的 {@link IMillRecipe} 列表
+     */
+    public static List<IMillRecipe> getRecipesByHandlers(GoalRegistry activeRegistry, Set<String> targetHandlerIds) {
+        List<IMillRecipe> recipes = new ArrayList<>();
         if (activeRegistry == null) {
             // [新注释] 使用 MMLog.warn 输出三语警告日志
             MMLog.warn(
@@ -77,14 +126,19 @@ public class MillCraftingRecipeMaker {
             GatheringType type = goal.getGatheringType();
             if (type != null && type.handlerId() != null) {
                 String handlerId = type.handlerId().toLowerCase();
-                // 只要属于合成/烹饪类 Handler 均进行解析
-                if (CRAFTING_HANDLER_IDS.contains(handlerId)) {
+                // 只要属于目标 Handler 类均进行解析
+                if (targetHandlerIds.contains(handlerId)) {
                     matchedCount++;
 
                     // 检索当前配方类型绑定的所有村民类型
                     List<VillagerType> matchedVillagers = goalToVillagersMap.getOrDefault(type.id(), List.of());
 
-                    MillCraftingRecipe recipe = MillCraftingRecipe.parse(type, matchedVillagers);
+                    /* =========================================================================================
+                     * [新注释] 【分流路由与类型修正】
+                     * 调用重构后的静态工厂 {@link MillCraftingRecipe#parse(GatheringType, List)}，
+                     * 直接获取解析完成的 {@link IMillRecipe} 子类实体（如 {@link StandardCraftingRecipe}）。
+                     * ========================================================================================= */
+                    IMillRecipe recipe = MillCraftingRecipe.parse(type, matchedVillagers);
                     if (recipe != null) {
                         recipes.add(recipe);
                         parsedCount++;
@@ -115,8 +169,8 @@ public class MillCraftingRecipeMaker {
 
         if (!recipes.isEmpty()) {
             MMLog.info(
-                    "[Millenaire-JEI] 已向 JEI 成功注册 {} 个千年工艺/烹饪配方！",
-                    "[Millenaire-JEI] Successfully registered {} Millénaire crafting/cooking recipes to JEI!",
+                    "[Millenaire-JEI] 已向 JEI 成功注册 {} 个千年工艺/加工配方！",
+                    "[Millenaire-JEI] Successfully registered {} Millénaire crafting/processing recipes to JEI!",
                     "[Millenaire-JEI] Enregistrement réussi de {} recettes de fabrication/cuisine Millénaire dans JEI !",
                     recipes.size()
             );
@@ -129,10 +183,11 @@ public class MillCraftingRecipeMaker {
         }
         return recipes;
     }
+    // endregion 3. 核心配方提取与匹配通用逻辑
 
+    // region 4. Villager 与 Goal 绑定关系构建 API
     /**
      * 构建的目标 Goal / GatheringType ID 到对应村民类型列表的建立关系字典。
-     *
      * @return 映射字典 {@link Map}
      */
     private static Map<ResourceLocation, List<VillagerType>> buildGoalToVillagerMap() {
@@ -171,4 +226,5 @@ public class MillCraftingRecipeMaker {
         }
         return map;
     }
+    // endregion 4. Villager 与 Goal 绑定关系构建 API
 }

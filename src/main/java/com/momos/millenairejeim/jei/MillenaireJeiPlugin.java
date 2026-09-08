@@ -7,6 +7,7 @@ import com.momos.millenairejeim.jei.Trade.MillTradeRecipeMaker;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintCategory;
 import com.momos.millenairejeim.jei.paint.MillPaintRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintRecipeMaker;
@@ -41,7 +42,7 @@ public class MillenaireJeiPlugin implements IModPlugin {
     public static final ResourceLocation PLUGIN_ID = ResourceLocation.fromNamespaceAndPath("millenaire", "jei_plugin");
     public static final RecipeType<MillTradeRecipe> TRADE_SELL_TYPE = RecipeType.create("millenaire", "village_sell", MillTradeRecipe.class);
     public static final RecipeType<MillTradeRecipe> TRADE_BUY_TYPE = RecipeType.create("millenaire", "village_buy", MillTradeRecipe.class);
-    public static final RecipeType<MillCraftingRecipe> CRAFTING_TYPE = RecipeType.create("millenaire", "crafting", MillCraftingRecipe.class);
+    public static final RecipeType<IMillRecipe> CRAFTING_TYPE = RecipeType.create("millenaire", "crafting", IMillRecipe.class);
     public static final RecipeType<MillPaintRecipe> PAINT_TYPE = RecipeType.create("millenaire", "painting", MillPaintRecipe.class);
 
     @Override
@@ -154,7 +155,6 @@ public class MillenaireJeiPlugin implements IModPlugin {
                 "[Millenaire-JEI] Registering dynamic crafting recipe manager (MillCraftingRecipeManagerPlugin)...",
                 "[Millenaire-JEI] Enregistrement du gestionnaire dynamique de recettes de fabrication (MillCraftingRecipeManagerPlugin)..."
         );
-
         // 查看千年工艺页面时才触发事件
         // 向 JEI 高级注册器中添加自定义配方管理器插件，接管动态懒加载逻辑
         registration.addRecipeManagerPlugin(new MillCraftingRecipeManagerPlugin());

@@ -1,8 +1,9 @@
-// region 千年工艺 JEI GUI 界面绘制与分类定义
+// region MillCraftingCategory.java
 package com.momos.millenairejeim.jei.crafting;
 
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
 import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -27,22 +28,20 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 千年工艺 JEI GUI 界面绘制与槽位布局类。
- * 关联 {@link MillCraftingRecipe} 完成在 JEI 窗口中的显示。
- * <p>
- * 已包含工艺类型（Crafting Type）、所属文化、制作村民及关联建筑等信息的完整展示。
+ * 千年工艺 JEI GUI 界面绘制与分类定义。
+ * 重新由 Category 统一负责背景、槽位、动画及文本和 Tooltip 的全量渲染。
  */
-public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe> {
-    private final RecipeType<MillCraftingRecipe> recipeType;
+public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
+    private final RecipeType<IMillRecipe> recipeType;
     private final Component title;
     private final IDrawable icon;
 
-    // GUI 元素
+    // GUI 基础纹理组件
     private final IDrawable inputSlotDrawable;
     private final IDrawable outputSlotDrawable;
     private final IDrawableAnimated animatedArrow;
 
-    public MillCraftingCategory(IGuiHelper guiHelper, RecipeType<MillCraftingRecipe> recipeType, Component title, ItemStack iconStack) {
+    public MillCraftingCategory(IGuiHelper guiHelper, RecipeType<IMillRecipe> recipeType, Component title, ItemStack iconStack) {
         this.recipeType = recipeType;
         this.title = title;
         this.icon = guiHelper.createDrawableItemStack(iconStack);
@@ -52,8 +51,20 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
         this.animatedArrow = guiHelper.createAnimatedRecipeArrow(200);
     }
 
+    public IDrawable getInputSlotDrawable() {
+        return inputSlotDrawable;
+    }
+
+    public IDrawable getOutputSlotDrawable() {
+        return outputSlotDrawable;
+    }
+
+    public IDrawableAnimated getAnimatedArrow() {
+        return animatedArrow;
+    }
+
     @Override
-    public RecipeType<MillCraftingRecipe> getRecipeType() {
+    public RecipeType<IMillRecipe> getRecipeType() {
         return recipeType;
     }
 
@@ -72,23 +83,18 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
         return 160;
     }
 
-    /**
-     * [新注释] 增大 JEI 分类页面高度至 105，以容纳换行后的标签与详细内容展示。
-     *
-     * @return 界面高度 (像素)
-     */
     @Override
     public int getHeight() {
         return 105;
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, MillCraftingRecipe recipe, IFocusGroup focuses) {
-        List<MillCraftingRecipe.IngredientWithCount> inputs = recipe.getInputs();
+    public void setRecipe(IRecipeLayoutBuilder builder, IMillRecipe recipe, IFocusGroup focuses) {
+        List<IMillRecipe.IngredientWithCount> inputs = recipe.getInputs();
         for (int i = 0; i < inputs.size(); i++) {
             int x = 6 + (i % 3) * 18;
             int y = 6 + (i / 3) * 18;
-            MillCraftingRecipe.IngredientWithCount input = inputs.get(i);
+            IMillRecipe.IngredientWithCount input = inputs.get(i);
 
             ItemStack[] displayStacks = Arrays.stream(input.ingredient().getItems())
                     .map(stack -> {
@@ -112,42 +118,43 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
         }
     }
 
-    /**
-     * [新注释] 绘制界面文本。已将【标签名】与【具体内容】拆分为两行显示，且内容行增加 6 像素缩进，避免文本超出界面边缘。
-     *
-     * @param recipe          {@link MillCraftingRecipe}
-     * @param recipeSlotsView {@link IRecipeSlotsView}
-     * @param guiGraphics     {@link GuiGraphics}
-     * @param mouseX          鼠标 X 坐标
-     * @param mouseY          鼠标 Y 坐标
-     */
+    /* =========================================================================================================
+     * [新注释] 【全量 GUI 渲染职责收回】
+     * 由 Category 直接调取 {@link IMillRecipe} 的数据，统一绘制槽位背景、动画箭头以及下方文本信息。
+     * ========================================================================================================= */
     @Override
-    public void draw(MillCraftingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(IMillRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        if (recipe == null) return;
+
         Font font = Minecraft.getInstance().font;
 
-        for (int row = 0; row < 2; row++) {
-            for (int col = 0; col < 3; col++) {
-                inputSlotDrawable.draw(guiGraphics, 6 + col * 18, 6 + row * 18);
+        // 1. 绘制 6 个输入槽位背景 (3x2 布局)
+        if (inputSlotDrawable != null) {
+            for (int row = 0; row < 2; row++) {
+                for (int col = 0; col < 3; col++) {
+                    inputSlotDrawable.draw(guiGraphics, 6 + col * 18, 6 + row * 18);
+                }
             }
         }
 
-        animatedArrow.draw(guiGraphics, 72, 15);
-
-        String rawCraftingType = recipe.getCraftingType();
-        if (rawCraftingType == null || rawCraftingType.isEmpty()) {
-            rawCraftingType = "crafting";
+        // 2. 绘制进度动画箭头
+        if (animatedArrow != null) {
+            animatedArrow.draw(guiGraphics, 72, 15);
         }
-        String craftingTypeKey = String.format(MillenaireJeiKeys.TEMPLATE_CRAFTING_TYPE, rawCraftingType.toLowerCase());
-        Component localizedCraftingType = Component.translatableWithFallback(craftingTypeKey, rawCraftingType);
+
+        // 3. 构建制作类型文本（通过 handlerId 判断类型）
+        boolean isSmelting = "smelting".equalsIgnoreCase(recipe.getHandlerId());
+        String rawCraftingType = isSmelting ? "smelting" : "crafting";
+        String craftingTypeKey = String.format(MillenaireJeiKeys.TEMPLATE_CRAFTING_TYPE, rawCraftingType);
+        Component localizedCraftingType = Component.translatableWithFallback(craftingTypeKey, isSmelting ? "冶炼/烹饪" : "村民手工");
         String rawGoalKey = recipe.getGoalKey() != null ? recipe.getGoalKey() : (recipe.getId() != null ? recipe.getId().getPath() : "unknown");
         Component localizedGoalName = MillenaireLocalizeHelper.getGoalName(rawGoalKey);
         String formattedCraftingType = localizedCraftingType.getString() + " - " + localizedGoalName.getString();
 
+        // 4. 构建制作村民汇总文本
         List<VillagerType> villagers = recipe.getVillagerTypes();
-        List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
-
         String villagerSummary;
-        if (villagers.isEmpty()) {
+        if (villagers == null || villagers.isEmpty()) {
             villagerSummary = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_NONE_VILLAGER,
                     MillenaireJeiKeys.FALLBACK_NONE_VILLAGER
@@ -166,8 +173,10 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
             }
         }
 
+        // 5. 构建关联建筑汇总文本
+        List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
         String buildingSummary;
-        if (buildings.isEmpty()) {
+        if (buildings == null || buildings.isEmpty()) {
             buildingSummary = Component.translatableWithFallback(
                     MillenaireJeiKeys.KEY_NONE_BUILDING,
                     MillenaireJeiKeys.FALLBACK_NONE_BUILDING
@@ -186,6 +195,7 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
             }
         }
 
+        // 6. 获取固定标签文本
         String labelCraftingType = Component.translatableWithFallback(
                 MillenaireJeiKeys.KEY_LABEL_CRAFTING_TYPE,
                 MillenaireJeiKeys.FALLBACK_LABEL_CRAFTING_TYPE
@@ -199,47 +209,30 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
                 MillenaireJeiKeys.FALLBACK_LABEL_BUILDING
         ).getString();
 
-        // 1. 制作类型（第一行标题，第二行缩进内容）
+        // 7. 渲染文本内容
         guiGraphics.drawString(font, "§8" + labelCraftingType, 6, 45, 0x404040, false);
         guiGraphics.drawString(font, "§5" + formattedCraftingType, 12, 54, 0x404040, false);
 
-        // 2. 制作村民（第一行标题，第二行缩进内容）
         guiGraphics.drawString(font, "§8" + labelVillager, 6, 65, 0x404040, false);
         guiGraphics.drawString(font, "§2" + villagerSummary, 12, 74, 0x404040, false);
 
-        // 3. 关联建筑（第一行标题，第二行缩进内容）
         guiGraphics.drawString(font, "§8" + labelBuilding, 6, 85, 0x404040, false);
         guiGraphics.drawString(font, "§3" + buildingSummary, 12, 94, 0x404040, false);
     }
 
-    /**
-     * [新注释] 构建鼠标悬停 Tooltip。已根据换行后的界面 Y 轴坐标调整检测区域。
-     *
-     * @param tooltip         {@link ITooltipBuilder}
-     * @param recipe          {@link MillCraftingRecipe}
-     * @param recipeSlotsView {@link IRecipeSlotsView}
-     * @param mouseX          鼠标 X 坐标
-     * @param mouseY          鼠标 Y 坐标
-     */
     @Override
-    public void getTooltip(ITooltipBuilder tooltip, MillCraftingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+    public void getTooltip(ITooltipBuilder tooltip, IMillRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        if (recipe == null) return;
+
         if (mouseX >= 6 && mouseX <= 154) {
-            // [新注释] 悬停在【制作村民】坐标范围 (y: 65 ~ 83)
+            // 悬停在【制作村民】区域 (y: 65 ~ 83)
             if (mouseY >= 65 && mouseY < 83) {
                 List<VillagerType> villagers = recipe.getVillagerTypes();
-                if (villagers.size() <= 1) {
-                    return;
-                }
-                tooltip.add(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_TOOLTIP_VILLAGERS_HEADER,
-                        MillenaireJeiKeys.FALLBACK_TOOLTIP_VILLAGERS_HEADER
-                ));
-                if (villagers.isEmpty()) {
+                if (villagers != null && villagers.size() > 1) {
                     tooltip.add(Component.translatableWithFallback(
-                            MillenaireJeiKeys.KEY_NONE_VILLAGER,
-                            MillenaireJeiKeys.FALLBACK_NONE_VILLAGER
+                            MillenaireJeiKeys.KEY_TOOLTIP_VILLAGERS_HEADER,
+                            MillenaireJeiKeys.FALLBACK_TOOLTIP_VILLAGERS_HEADER
                     ));
-                } else {
                     villagers.forEach(v -> {
                         Component vName = MillenaireJeimLocalizeHelper.getCraftingVillagerText(v);
                         MillenaireJeimLocalizeHelper.addTooltipEntry(tooltip, vName);
@@ -248,30 +241,20 @@ public class MillCraftingCategory implements IRecipeCategory<MillCraftingRecipe>
                 return;
             }
 
-            // [新注释] 悬停在【关联建筑】坐标范围 (y: 85 ~ 103)
+            // 悬停在【关联建筑】区域 (y: 85 ~ 103)
             if (mouseY >= 85 && mouseY <= 103) {
                 List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
-                if (buildings.size() <= 1) {
-                    return;
-                }
-                tooltip.add(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_TOOLTIP_BUILDINGS_HEADER,
-                        MillenaireJeiKeys.FALLBACK_TOOLTIP_BUILDINGS_HEADER
-                ));
-                if (buildings.isEmpty()) {
+                if (buildings != null && buildings.size() > 1) {
                     tooltip.add(Component.translatableWithFallback(
-                            MillenaireJeiKeys.KEY_NONE_BUILDING,
-                            MillenaireJeiKeys.FALLBACK_NONE_BUILDING
+                            MillenaireJeiKeys.KEY_TOOLTIP_BUILDINGS_HEADER,
+                            MillenaireJeiKeys.FALLBACK_TOOLTIP_BUILDINGS_HEADER
                     ));
-                } else {
                     buildings.forEach(b -> {
                         Component bName = MillenaireJeimLocalizeHelper.getCraftingBuildingText(b);
                         MillenaireJeimLocalizeHelper.addTooltipEntry(tooltip, bName);
                     });
                 }
-                return;
             }
         }
     }
 }
-// endregion 千年工艺 JEI GUI 界面绘制与分类定义
