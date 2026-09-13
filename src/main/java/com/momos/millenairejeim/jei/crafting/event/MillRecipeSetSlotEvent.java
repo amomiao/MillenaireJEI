@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.jei.crafting.event;
 
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
+import com.momos.millenairejeim.jei.IMillRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.recipe.IFocusGroup;
 import net.neoforged.bus.api.Event;

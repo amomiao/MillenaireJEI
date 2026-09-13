@@ -2,9 +2,9 @@ package com.momos.millenairejeim.jei.crafting;
 
 import com.momos.millenairejeim.jei.MillenaireJeimPlugin;
 import com.momos.millenairejeim.jei.crafting.type.GoalCraftingRecipe;
-import com.momos.millenairejeim.jei.crafting.type.base.AbstractMillCraftingType;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
-import com.momos.millenairejeim.jei.crafting.type.base.MillBaseRecipe;
+import com.momos.millenairejeim.jei.crafting.type.AbstractMillCraftingType;
+import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.MillBaseRecipe;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.recipe.IFocus;
 import mezz.jei.api.recipe.RecipeIngredientRole;

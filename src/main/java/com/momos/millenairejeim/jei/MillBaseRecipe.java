@@ -1,4 +1,4 @@
-package com.momos.millenairejeim.jei.crafting.type.base;
+package com.momos.millenairejeim.jei;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import net.minecraft.resources.ResourceLocation;

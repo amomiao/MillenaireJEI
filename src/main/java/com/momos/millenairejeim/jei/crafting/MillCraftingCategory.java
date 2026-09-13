@@ -2,13 +2,13 @@
 package com.momos.millenairejeim.jei.crafting;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.momos.millenairejeim.gui.widget.MillPlusButtonWidget;
+import com.momos.millenairejeim.gui.MillPlusButtonWidget;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
+import com.momos.millenairejeim.jei.IMillRecipe;
 import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;

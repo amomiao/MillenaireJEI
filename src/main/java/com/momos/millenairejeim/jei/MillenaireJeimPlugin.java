@@ -7,7 +7,6 @@ import com.momos.millenairejeim.jei.Trade.MillTradeRecipe;
 import com.momos.millenairejeim.jei.Trade.MillTradeRecipeMaker;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintCategory;
 import com.momos.millenairejeim.jei.paint.MillPaintRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintRecipeMaker;

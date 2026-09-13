@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.jei.crafting.event;
 
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
+import com.momos.millenairejeim.jei.IMillRecipe;
 import net.neoforged.bus.api.Event;
 
 /**

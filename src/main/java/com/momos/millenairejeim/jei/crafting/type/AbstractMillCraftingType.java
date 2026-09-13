@@ -1,7 +1,8 @@
-package com.momos.millenairejeim.jei.crafting.type.base;
+package com.momos.millenairejeim.jei.crafting.type;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.momos.millenairejeim.jei.IMillRecipe;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;

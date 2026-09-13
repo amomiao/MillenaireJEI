@@ -1,7 +1,7 @@
 package com.momos.millenairejeim.jei.crafting;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
+import com.momos.millenairejeim.jei.IMillRecipe;
 import com.momos.millenairejeim.util.MMLog;
 import net.minecraft.resources.ResourceLocation;
 import org.millenaire.culture.VillagerType;

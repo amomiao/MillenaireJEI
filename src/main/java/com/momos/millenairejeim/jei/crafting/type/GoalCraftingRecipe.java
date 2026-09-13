@@ -2,9 +2,8 @@ package com.momos.millenairejeim.jei.crafting.type;
 
 import com.google.gson.JsonObject;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
-import com.momos.millenairejeim.jei.crafting.type.base.AbstractMillCraftingType;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
-import com.momos.millenairejeim.jei.crafting.type.base.MillBaseRecipe;
+import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.MillBaseRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.millenaire.culture.VillagerType;

@@ -1,5 +1,5 @@
 // region IMillRecipe.java
-package com.momos.millenairejeim.jei.crafting.type.base;
+package com.momos.millenairejeim.jei;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;

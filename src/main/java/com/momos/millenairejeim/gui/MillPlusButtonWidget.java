@@ -1,4 +1,4 @@
-package com.momos.millenairejeim.gui.widget;
+package com.momos.millenairejeim.gui;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
