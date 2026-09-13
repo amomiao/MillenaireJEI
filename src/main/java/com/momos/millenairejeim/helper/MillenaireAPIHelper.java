@@ -1,6 +1,5 @@
 package com.momos.millenairejeim.helper;
 
-import com.momos.millenairejeim.util.VillagerBuildingMapper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +12,7 @@ import org.millenaire.commerce.TradeGood;
 import org.millenaire.commerce.TradeGoodsLoader;
 import org.millenaire.culture.Culture;
 import org.millenaire.culture.ModCultures;
+import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 import org.millenaire.goal.GoalRegistry;
 import org.millenaire.goal.VillagerGoal;
@@ -22,110 +22,236 @@ import org.millenaire.item.ItemHelper;
 import org.millenaire.item.ModItems;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
+// region 千年 API 门面与助手封装
 /**
  * 千年村庄 (Millenaire) 模组核心 API 统一封装辅助类。
- * 集中管理对千年前后端核心 API 的调用，实现 JEI 插件与 Millenaire 核心逻辑的解耦与安全访问。
+ * 集中管理对千年前后端核心 API 的调用，并作为 {@link MillenaireDatabase} 的门面类对外提供高频查询。
  */
 public final class MillenaireAPIHelper {
-    private static Map<ResourceLocation, List<BuildingPlanSet>> villagerBuildingMap;
 
-    private MillenaireAPIHelper() {
+    private MillenaireAPIHelper() {}
+
+    /** 清空本地静态缓存（建议在重载数据包或离开世界时调用）*/
+    public static void clearCache() {
+        // [醒目新注释] 重置底层 MillenaireDatabase 数据库映射单例
+        MillenaireDatabase.clear();
     }
 
+    //Tag 基础标识与方法重载封装，自动规范小写路径并规避 Null 指针
     // 获得文化信息
-    public static Culture getCulture(ResourceLocation cultureId){ return ModCultures.getCulture(cultureId); }
-    // 获得建筑信息
-    public static BuildingPlanSet getBuildingPlanSet(ResourceLocation buildingId){ return ModCultures.getBuildingPlanSet(buildingId); }
-    // 通过 ResourceLocation 获取对应的 Goal 逻辑实例
-    public static VillagerGoal getGoal(ResourceLocation goalId) {return Millenaire.getGoalRegistry().get(goalId);}
+    public static Map<ResourceLocation, Culture> getAllCultureType() { return ModCultures.getAllCultures(); }
+    public static Set<ResourceLocation> getAllCultureIds() { return getAllCultureType().keySet(); }
+    public static Collection<Culture> getAllCultures() { return getAllCultureType().values(); }
+    public static Culture getCulture(ResourceLocation cultureId) { return cultureId == null ? null : ModCultures.getCulture(cultureId); }
+    // tag
+    public static final ResourceLocation TAG_CULTURE_BASE = ResourceLocation.fromNamespaceAndPath("millenaire", "culture");
+    public static ResourceLocation getCultureTag(String culturePath) {
+        if (culturePath == null || culturePath.isBlank()) return null;
+        return ResourceLocation.fromNamespaceAndPath("millenaire", culturePath.toLowerCase(Locale.ROOT));
+    }
+    public static ResourceLocation getCultureTag(ResourceLocation cultureId) {return cultureId == null ? null : getCultureTag(cultureId.getPath());}
+    public static ResourceLocation getCultureTag(Culture culture) {return culture == null ? null : getCultureTag(culture.id());}
 
+    // 获得村庄信息
+    public static Map<ResourceLocation, VillageType> getAllVillageType() { return ModCultures.getAllVillageTypes(); }
+    public static Set<ResourceLocation> getAllVillageIds() { return getAllVillageType().keySet(); }
+    public static Collection<VillageType> getAllVillages() { return getAllVillageType().values(); }
+    public static VillageType getVillage(ResourceLocation villageId) { return villageId == null ? null : ModCultures.getVillageType(villageId); }
+    // tag
+    public static final ResourceLocation TAG_VILLAGE_BASE = ResourceLocation.fromNamespaceAndPath("millenaire", "village");
+    public static ResourceLocation getVillageTag(String villagePath) {
+        if (villagePath == null || villagePath.isBlank()) return null;
+        return ResourceLocation.fromNamespaceAndPath("millenaire", villagePath.toLowerCase(Locale.ROOT));
+    }
+    public static ResourceLocation getVillageTag(ResourceLocation villageId) {return villageId == null ? null : getVillageTag(villageId.getPath());}
+    public static ResourceLocation getVillageTag(VillageType village) {return village == null ? null : getVillageTag(village.id());}
+
+    // 获得建筑信息
+    public static Map<ResourceLocation, BuildingPlanSet> getAllBuildingPlanSets() { return ModCultures.getAllBuildingPlanSets(); }
+    public static Set<ResourceLocation> getAllBuildingIds() { return getAllBuildingPlanSets().keySet(); }
+    public static Collection<BuildingPlanSet> getAllBuildings() { return getAllBuildingPlanSets().values(); }
+    // plan
+    public static BuildingPlanSet getBuildingPlanSet(ResourceLocation buildingId) {
+        if (buildingId == null) return null;
+        Map<ResourceLocation, BuildingPlanSet> allSets = getAllBuildingPlanSets();
+        if (allSets == null || allSets.isEmpty()) return null;
+        BuildingPlanSet planSet = allSets.get(buildingId);
+        if (planSet != null) return planSet;
+        String path = buildingId.getPath();
+        String namespace = buildingId.getNamespace();
+        ResourceLocation fallbackRl = ResourceLocation.fromNamespaceAndPath("millenaire", namespace + "/" + path);
+        planSet = allSets.get(fallbackRl);
+        if (planSet != null) return planSet;
+        for (Map.Entry<ResourceLocation, BuildingPlanSet> entry : allSets.entrySet()) {
+            ResourceLocation key = entry.getKey();
+            if (key.getPath().equals(path) || key.getPath().endsWith("/" + path)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+    public static Map<ResourceLocation, BuildingPlan> getAllBuildingPlans() { return ModCultures.getAllBuildingPlans(); }
+
+    // tag
+    public static final ResourceLocation TAG_BUILDING_BASE = ResourceLocation.fromNamespaceAndPath("millenaire", "building");
+    public static ResourceLocation getBuildingTag(String buildingId) {
+        if (buildingId == null || buildingId.isBlank()) return null;
+        return ResourceLocation.fromNamespaceAndPath("millenaire", buildingId.toLowerCase(Locale.ROOT));
+    }
+    public static ResourceLocation getBuildingTag(BuildingPlanSet building) {return building == null ? null : getBuildingTag(building.buildingId());}
+
+    // 获得村民信息
+    public static Map<ResourceLocation, VillagerType> getAllVillagerType() { return ModCultures.getAllVillagerTypes(); }
+    public static Set<ResourceLocation> getAllVillagerIds() { return getAllVillagerType().keySet(); }
+    public static Collection<VillagerType> getAllVillagers() { return getAllVillagerType().values(); }
+    public static VillagerType getVillager(ResourceLocation villagerId) { return villagerId == null ? null : ModCultures.getVillagerType(villagerId); }
+    // tag
+    public static final ResourceLocation TAG_VILLAGER_BASE = ResourceLocation.fromNamespaceAndPath("millenaire", "villager");
+    public static ResourceLocation getVillagerTag(String villagerPath) {
+        if (villagerPath == null || villagerPath.isBlank()) return null;
+        return ResourceLocation.fromNamespaceAndPath("millenaire", villagerPath.toLowerCase(Locale.ROOT));
+    }
+    public static ResourceLocation getVillagerTag(ResourceLocation villagerId) {return villagerId == null ? null : getVillagerTag(villagerId.getPath());}
+    public static ResourceLocation getVillagerTag(VillagerType villager) {return villager == null ? null : getVillagerTag(villager.id());}
+
+    // 获得 Goal 信息
+    public static GoalRegistry getGoalRegistry() { return Millenaire.getGoalRegistry(); }
+    public static List<ResourceLocation> getAllGoalIds() { return getGoalRegistry() == null ? Collections.emptyList() : getGoalRegistry().getAllIds(); }
+    public static List<GatheringGoal> getAllGoals() { return getGoalRegistry() == null ? Collections.emptyList() : getGoalRegistry().getGatheringGoals(); }
+    public static VillagerGoal getGoal(ResourceLocation goalId) { return getGoalRegistry() == null || goalId == null ? null : getGoalRegistry().get(goalId); }
+    public static GatheringType getGatheringType(GatheringGoal goal) { return goal == null ? null : goal.getGatheringType(); }
+
+    // 获得商店信息
+    public static Map<String, ShopProfile> getShopProfiles(ResourceLocation cultureId) { return cultureId == null ? Collections.emptyMap() : ShopProfileLoader.getProfiles(cultureId); }
+    public static TradeGood getTradeGood(ResourceLocation cultureId, String goodId) { return cultureId == null || goodId == null ? null : TradeGoodsLoader.getGoodById(cultureId, goodId); }
+    public static Item resolveTradeGoodItem(TradeGood good) { return good == null ? null : good.resolveItem(); }
 
     // region 物品与货币系统 API
-
-    /**
-     * 安全解析千年定义的物品字符串标识符，转换为标准的 Minecraft {@link Item}。
-     *
-     * @param itemId 物品标识符（如 ID 或标签名）
-     * @return 解析后的 {@link Item} 实例
-     * @see ItemHelper#resolve(String)
-     */
-    public static Item resolveItem(String itemId) {return ItemHelper.resolve(itemId);}
-
-    /**
-     * 获取千年金钱币 {@link ModItems#DENIER_OR} 堆叠。
-     * @param count 数量
-     * @return 金币 {@link ItemStack}
-     * @see ModItems#DENIER_OR
-     */
-    public static ItemStack getDenierOrStack(int count) {return new ItemStack(ModItems.DENIER_OR.get(), count);}
-
-    /**
-     * 获取千年银钱币 {@link ModItems#DENIER_ARGENT} 堆叠。
-     *
-     * @param count 数量
-     * @return 银币 {@link ItemStack}
-     * @see ModItems#DENIER_ARGENT
-     */
-    public static ItemStack getDenierArgentStack(int count) {return new ItemStack(ModItems.DENIER_ARGENT.get(), count);}
-
-    /**
-     * 获取千年铜钱币 {@link ModItems#DENIER} 堆叠。
-     *
-     * @param count 数量
-     * @return 铜币 {@link ItemStack}
-     * @see ModItems#DENIER
-     */
-    public static ItemStack getDenierStack(int count) {return new ItemStack(ModItems.DENIER.get(), count);}
-
+    public static Item resolveItem(String itemId) { return ItemHelper.resolve(itemId); }
+    public static ItemStack getDenierOrStack(int count) { return new ItemStack(ModItems.DENIER_OR.get(), count); }
+    public static ItemStack getDenierArgentStack(int count) { return new ItemStack(ModItems.DENIER_ARGENT.get(), count); }
+    public static ItemStack getDenierStack(int count) { return new ItemStack(ModItems.DENIER.get(), count); }
     // endregion 物品与货币系统 API
 
-    /**
-     * 获取所有已注册千年的文化 ResourceLocation 集合。
-     * @return 文化 ResourceLocation 集合
-     * @see ModCultures#getAllCultures()
-     */
-    public static Set<ResourceLocation> getAllCultureIds() {
-        return ModCultures.getAllCultures().keySet();
+    // region 文化与建筑村民关联过滤底层工具与门面 API
+    public static <S, T> List<T> filterByResourceLocation(
+            S source,
+            Collection<T> targets,
+            Function<S, ResourceLocation> sourceIdExtractor,
+            Function<T, ResourceLocation> targetIdExtractor) {
+        if (source == null || targets == null || targets.isEmpty() || sourceIdExtractor == null || targetIdExtractor == null) {
+            return List.of();
+        }
+        ResourceLocation sourceId = sourceIdExtractor.apply(source);
+        if (sourceId == null) {
+            return List.of();
+        }
+        return targets.stream()
+                .filter(Objects::nonNull)
+                .filter(target -> sourceId.equals(targetIdExtractor.apply(target)))
+                .toList();
     }
 
-    // region 交易 API
-    /**
-     * 获取指定文化下的所有商店配置 {@link ShopProfile} 映射。
-     * @param cultureId 文化 ResourceLocation 标识符
-     * @return 商店 ID 到 {@link ShopProfile} 的映射表
-     * @see ShopProfileLoader#getProfiles(ResourceLocation)
-     */
-    public static Map<String, ShopProfile> getShopProfiles(ResourceLocation cultureId) {return ShopProfileLoader.getProfiles(cultureId);}
-    /**
-     * 根据文化和商品 ID 检索特定的商业商品实体 {@link TradeGood}。
-     * @param cultureId 文化 ResourceLocation
-     * @param goodId    商品 ID
-     * @return 对应的 {@link TradeGood}，未检索到则返回 null
-     * @see TradeGoodsLoader#getGoodById(ResourceLocation, String)
-     */
-    public static TradeGood getTradeGood(ResourceLocation cultureId, String goodId) {return TradeGoodsLoader.getGoodById(cultureId, goodId);}
-    /**
-     * 从商品实体 {@link TradeGood} 中解析对应的 Minecraft {@link Item}。
-     * @param good 商品实体
-     * @return 解析后的 {@link Item} 实例，若 good 为 null 或无法解析则返回 null
-     * @see TradeGood#resolveItem()
-     */
-    public static Item resolveTradeGoodItem(TradeGood good) {
-        if (good == null) {
-            return null;
+    public static <S, T> List<T> filterByResourceLocationMulti(
+            S source,
+            Collection<T> targets,
+            Function<S, Collection<ResourceLocation>> sourceIdsExtractor,
+            Function<T, Collection<ResourceLocation>> targetIdsExtractor) {
+        if (source == null || targets == null || targets.isEmpty()
+                || sourceIdsExtractor == null || targetIdsExtractor == null) {
+            return List.of();
         }
-        return good.resolveItem();
+        Collection<ResourceLocation> sourceIds = sourceIdsExtractor.apply(source);
+        if (sourceIds == null || sourceIds.isEmpty()) {
+            return List.of();
+        }
+        Set<ResourceLocation> sourceSet = new HashSet<>(sourceIds);
+        return targets.stream()
+                .filter(Objects::nonNull)
+                .filter(target -> {
+                    Collection<ResourceLocation> targetIds = targetIdsExtractor.apply(target);
+                    return targetIds != null && targetIds.stream().anyMatch(sourceSet::contains);
+                })
+                .toList();
     }
-    /**
-     * [新注释] 根据文化 ID 与商店标识查找所有对应的基础建筑标识 (Building Key) 集合。
-     * 自动剥离变体 (_a) 与等级 (_2) 后缀，完成建筑集维度的去重。
-     *
-     * @param cultureId 文化 {@link ResourceLocation}
-     * @param shopId    商店标识
-     * @return 匹配到的基础建筑 Key 集合 {@link Set}（例如: ["castlepolish", "mansionpolish"]）
-     */
+
+    /** 抽取村庄配置中绑定的所有建筑 ID */
+    public static Set<ResourceLocation> extractBuildingIdsFromVillage(VillageType village) {
+        if (village == null) return Collections.emptySet();
+        Set<ResourceLocation> ids = new HashSet<>();
+        if (village.layout() != null) {
+            for (VillageType.LayoutSlot slot : village.layout()) {
+                if (slot != null && slot.plan() != null) {
+                    ids.add(slot.plan());
+                }
+            }
+        }
+        if (village.playerBuildings() != null) {
+            ids.addAll(village.playerBuildings());
+        }
+        return ids;
+    }
+
+    // [醒目新注释] 下述过滤 API 均转由底层 {@link MillenaireDatabase} 单例高效提供
+
+    public static List<VillageType> getVillageFormCulture(Culture culture) {
+        if (culture == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getVillagesByCulture(culture.id()) : List.of();
+    }
+
+    public static List<BuildingPlanSet> getBuildingFormVillage(VillageType village) {
+        if (village == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getBuildingsByVillage(village.id()) : List.of();
+    }
+
+    public static List<VillagerType> getVillagerFormVillage(VillageType village) {
+        if (village == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getVillagersByVillage(village.id()) : List.of();
+    }
+
+    public static List<VillageType> getVillageFormBuilding(BuildingPlanSet building) {
+        if (building == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getVillagesByBuilding(building.id()) : List.of();
+    }
+
+    public static List<VillagerType> getVillagerFormBuilding(BuildingPlanSet building) {
+        if (building == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getVillagersByBuilding(building.id()) : List.of();
+    }
+
+    public static List<VillageType> getVillageFormVillager(VillagerType villager) {
+        if (villager == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getVillagesByVillager(villager.id()) : List.of();
+    }
+
+    public static List<BuildingPlanSet> getBuildingFormVillager(VillagerType villager) {
+        if (villager == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getBuildingsByVillager(villager.id()) : List.of();
+    }
+
+    public static List<BuildingPlanSet> MappingVillagerBuilding(ResourceLocation villagerTypeId) {
+        if (villagerTypeId == null) return Collections.emptyList();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getBuildingsByVillager(villagerTypeId) : Collections.emptyList();
+    }
+
+    public static List<BuildingPlanSet> MappingVillagerBuilding(VillagerType villagerType) {
+        if (villagerType == null) return Collections.emptyList();
+        return MappingVillagerBuilding(villagerType.id());
+    }
+
+    // endregion 文化与建筑村民关联过滤底层工具与门面 API
+
+    // region 交易 API
     public static Set<String> getBuildingKeysByShopId(ResourceLocation cultureId, String shopId) {
         Set<String> matchedBuildingKeys = new HashSet<>();
         if (cultureId == null || shopId == null) {
@@ -134,7 +260,6 @@ public final class MillenaireAPIHelper {
         Map<ResourceLocation, BuildingPlan> buildingMap = getAllBuildingPlans();
         if (buildingMap != null) {
             for (BuildingPlan plan : buildingMap.values()) {
-                // [新注释] 匹配文化与商店 ID
                 if (plan != null && shopId.equals(plan.shopId()) && cultureId.equals(plan.culture())) {
                     String baseKey = extractBaseBuildingKey(plan.id());
                     if (!baseKey.isEmpty()) {
@@ -145,109 +270,15 @@ public final class MillenaireAPIHelper {
         }
         return matchedBuildingKeys;
     }
-    /**
-     * [新注释] 从 BuildingPlan 的 ResourceLocation 中提取基础建筑 Key。
-     * 例如："millenaire:polish/castlepolish_a_2" -> "castlepolish"
-     */
+
     public static String extractBaseBuildingKey(ResourceLocation planId) {
         if (planId == null) return "";
         String path = planId.getPath();
-
-        // 1. 剥离文化路径前缀 (如 "polish/castlepolish_a_2" -> "castlepolish_a_2")
         if (path.contains("/")) {
             path = path.substring(path.lastIndexOf('/') + 1);
         }
-        // 2. 剥离变体字母与等级数字后缀 (如 "castlepolish_a_2" -> "castlepolish")
-        return path.replaceAll("_[a-zA-Z]_\\d+$", "");
+        return path.replaceAll("(_[a-zA-Z])?(_\\d+)?$", "");
     }
     // endregion 交易 API
-
-
-    // region Goal API
-    /**
-     * 获取千年模组主目标注册表 {@link GoalRegistry} 实例。
-     * @return 当前激活的 {@link GoalRegistry}，若未完成初始化则可能返回 null
-     * @see Millenaire#getGoalRegistry()
-     */
-    public static GoalRegistry getGoalRegistry() {return Millenaire.getGoalRegistry();}
-
-    /**
-     * 从目标注册表中提取所有的采集/加工目标列表 {@link GatheringGoal}。
-     * @param registry 千年目标注册表 {@link GoalRegistry}
-     * @return 包含所有采集与加工 Goal 的列表，若 registry 为 null 则返回 null
-     * @see GoalRegistry#getGatheringGoals()
-     */
-    public static List<GatheringGoal> getGatheringGoals(GoalRegistry registry) {
-        if (registry == null) {
-            return null;
-        }
-        return registry.getGatheringGoals();
-    }
-
-    /**
-     * 从指定的 {@link GatheringGoal} 中获取对应的 {@link GatheringType} 实体。
-     *
-     * @param goal 目标实体
-     * @return 关联的 {@link GatheringType}，若 goal 为 null 则返回 null
-     * @see GatheringGoal#getGatheringType()
-     */
-    public static GatheringType getGatheringType(GatheringGoal goal) {
-        if (goal == null) {
-            return null;
-        }
-        return goal.getGatheringType();
-    }
-    // endregion Goal API
-
-    // region Building&Villager API
-
-    public static Map<ResourceLocation, VillagerType>  getAllVillagerType(){ return ModCultures.getAllVillagerTypes(); }
-    /**获取全量注册的建筑计划集（按建筑类型分类，包含该建筑的所有升级阶段）。
-     * @return 建筑 ID 到 {@link BuildingPlanSet} 的映射字典
-     * @see ModCultures#getAllBuildingPlanSets()
-     */
-    public static Map<ResourceLocation, BuildingPlanSet> getAllBuildingPlanSets() {return ModCultures.getAllBuildingPlanSets();}
-    /**获取全量注册的具体建筑蓝图（包含各个级别的独立蓝图）。
-     * @return 蓝图 ID 到 {@link BuildingPlan} 的映射字典
-     * @see ModCultures#getAllBuildingPlans()
-     */
-    public static Map<ResourceLocation, BuildingPlan> getAllBuildingPlans() {return ModCultures.getAllBuildingPlans();}
-
-    /**
-     * 根据村民类型 ID 查询其关联的所有建筑模板 {@link BuildingPlanSet} 列表。
-     * @param villagerTypeId 村民类型的全路径 {@link ResourceLocation}
-     * @return 此村民Type被注册于哪些建筑中 {@link BuildingPlanSet} 列表；若无匹配项则返回空列表
-     */
-    public static List<BuildingPlanSet> MappingVillagerBuilding(ResourceLocation villagerTypeId) {
-        if (villagerTypeId == null) {
-            return Collections.emptyList();
-        }
-        if (villagerBuildingMap == null) {
-            // [新注释] 获取 ID 映射表后，通过 ModCultures#getBuildingPlanSet 将建筑 ID 解析为具体的 BuildingPlanSet 对象
-            Map<ResourceLocation, List<ResourceLocation>> rawIdMap = VillagerBuildingMapper.buildVillagerToBuildingMap();
-
-            villagerBuildingMap = rawIdMap.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> entry.getValue().stream()
-                                    .map(MillenaireAPIHelper::getBuildingPlanSet)
-                                    .filter(Objects::nonNull)
-                                    .toList()
-                    ));
-        }
-        return villagerBuildingMap.getOrDefault(villagerTypeId, Collections.emptyList());
-    }
-
-    /**
-     * 根据村民类型对象重载查询其关联的所有建筑模板 {@link BuildingPlanSet} 列表。
-     * @param villagerType 村民类型配置对象 {@link VillagerType}
-     * @return 该村民可居住或工作的建筑模板 {@link BuildingPlanSet} 列表
-     */
-    public static List<BuildingPlanSet> MappingVillagerBuilding(VillagerType villagerType) {
-        if (villagerType == null) {
-            return Collections.emptyList();
-        }
-        return MappingVillagerBuilding(villagerType.id());
-    }
-    // endregion Building&Villager API
 }
+// endregion 千年 API 门面与助手封装

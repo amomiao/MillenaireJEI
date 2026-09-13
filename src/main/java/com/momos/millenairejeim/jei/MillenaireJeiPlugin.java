@@ -1,5 +1,6 @@
 package com.momos.millenairejeim.jei;
 
+import com.momos.millenairejeim.helper.MillenaireDatabase;
 import com.momos.millenairejeim.jei.Trade.BadgedIconDrawable;
 import com.momos.millenairejeim.jei.Trade.MillTradeCategory;
 import com.momos.millenairejeim.jei.Trade.MillTradeRecipe;
@@ -53,8 +54,8 @@ public class MillenaireJeiPlugin implements IModPlugin {
     // `Categories`说白了就是`页签`，这里是在`注册页签`，并且内部实现对JEI页签渲染的描述
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
+        MillenaireDatabase.getInstance();
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
-
         // 使用 MMLog 输出分类注册开始三语日志
         MMLog.info(
                 "[Millenaire-JEI] 开始注册 JEI Categories...",
@@ -113,6 +114,7 @@ public class MillenaireJeiPlugin implements IModPlugin {
                         .filter(PaintBucketItem.class::isInstance)
                         .findFirst()
                         .orElse(ModItems.DENIER_OR.get())) // 获取任意油漆桶作为 Icon
+                //      .orElse(MillenaireAPIHelper.getDenierOrStack(1).getItem())) // 等价
         ));
 
         // 使用 MMLog 输出分类注册完成三语日志
