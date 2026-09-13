@@ -38,13 +38,21 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 千年工艺 JEI GUI 界面绘制与分类定义[cite: 15]。
- * 重新由 Category 统一负责背景、槽位、动画及文本和 Tooltip 的全量渲染[cite: 15]。
+ * 千年工艺 JEI GUI 界面绘制与分类定义。
+ * 重新由 Category 统一负责背景、槽位、动画及文本和 Tooltip 的全量渲染。
  */
 public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     public static final String BUTTON_ID_VILLAGER_DETAIL = "villager_detail_plus";
+    // [醒目新注释] 新增建筑详情按钮 ID 标识，用于解耦村民与建筑按钮逻辑
+    public static final String BUTTON_ID_BUILDING_DETAIL = "building_detail_plus";
+
+    // [醒目新注释] 将村民加号按钮坐标调整至村民要素文本/图标右侧 (X=142, Y=74)
     private static final int VILLAGER_BUTTON_X = 142;
-    private static final int VILLAGER_BUTTON_Y = 54;
+    private static final int VILLAGER_BUTTON_Y = 74;
+
+    // [醒目新注释] 将建筑加号按钮坐标移动/设置至建筑要素文本/图标右侧 (X=142, Y=94)
+    private static final int BUILDING_BUTTON_X = 142;
+    private static final int BUILDING_BUTTON_Y = 94;
 
     private final RecipeType<IMillRecipe> recipeType;
     private final Component title;
@@ -56,9 +64,11 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     private final IDrawableAnimated animatedArrow;
 
     /* =========================================================================================
-     * [醒目新注释] 实例化控件：通用加号按钮控件
+     * [醒目新注释] 实例化控件：分别为村民与建筑配置独立的通用加号按钮控件
      * ========================================================================================= */
     private final MillPlusButtonWidget villagerPlusButton = new MillPlusButtonWidget(12, 12);
+    // [醒目新注释] 新建建筑要素右侧的加号按钮实例
+    private final MillPlusButtonWidget buildingPlusButton = new MillPlusButtonWidget(12, 12);
 
     public MillCraftingCategory(IGuiHelper guiHelper, RecipeType<IMillRecipe> recipeType, Component title, ItemStack iconStack) {
         this.recipeType = recipeType;
@@ -153,7 +163,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
 
         Font font = Minecraft.getInstance().font;
 
-        // 1. 绘制 6 个输入槽位背景 (3x2 布局)[cite: 15]
+        // 1. 绘制 6 个输入槽位背景 (3x2 布局)
         if (inputSlotDrawable != null) {
             for (int row = 0; row < 2; row++) {
                 for (int col = 0; col < 3; col++) {
@@ -162,19 +172,19 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
             }
         }
 
-        // 2. 绘制进度动画箭头[cite: 15]
+        // 2. 绘制进度动画箭头
         if (animatedArrow != null) {
             animatedArrow.draw(guiGraphics, 72, 15);
         }
 
-        // 3. 构建制作类型文本（通过 handlerId 判断类型，兼容多态显示）[cite: 15]
+        // 3. 构建制作类型文本（通过 handlerId 判断类型，兼容多态显示）
         String handlerId = recipe.getHandlerId() != null ? recipe.getHandlerId().toLowerCase() : "crafting";
         Component localizedCraftingType = MillenaireLocalizeHelper.getCraftingTypeName(handlerId);
         String rawGoalKey = recipe.getGoalKey() != null ? recipe.getGoalKey() : (recipe.getId() != null ? recipe.getId().getPath() : "unknown");
         Component localizedGoalName = MillenaireLocalizeHelper.getGoalName(rawGoalKey);
         String formattedCraftingType = localizedCraftingType.getString() + " - " + localizedGoalName.getString();
 
-        // 4. 构建制作村民汇总文本[cite: 15]
+        // 4. 构建制作村民汇总文本
         List<VillagerType> villagers = recipe.getVillagerTypes();
         String villagerSummary;
         if (villagers == null || villagers.isEmpty()) {
@@ -196,7 +206,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
             }
         }
 
-        // 5. 构建关联建筑汇总文本[cite: 15]
+        // 5. 构建关联建筑汇总文本
         List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
         String buildingSummary;
         if (buildings == null || buildings.isEmpty()) {
@@ -218,7 +228,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
             }
         }
 
-        // 6. 获取固定标签文本[cite: 15]
+        // 6. 获取固定标签文本
         String labelCraftingType = Component.translatableWithFallback(
                 MillenaireJeimKeys.KEY_LABEL_CRAFTING_TYPE,
                 MillenaireJeimKeys.FALLBACK_LABEL_CRAFTING_TYPE
@@ -232,7 +242,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
                 MillenaireJeimKeys.FALLBACK_LABEL_BUILDING
         ).getString();
 
-        // 7. 渲染文本内容[cite: 15]
+        // 7. 渲染文本内容
         guiGraphics.drawString(font, "§8" + labelCraftingType, 6, 45, 0x404040, false);
         guiGraphics.drawString(font, "§5" + formattedCraftingType, 12, 54, 0x404040, false);
 
@@ -245,18 +255,29 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
         /* =========================================================================================
          * [醒目新注释] 事件1应用：询问是否绘制【村民详情查看 (+) 按钮】
          * ========================================================================================= */
-        boolean defaultShouldRender = villagers != null && !villagers.isEmpty();
-        MillRecipeButtonRenderEvent renderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultShouldRender);
-        renderEvent.setShouldRender(false);
-        NeoForge.EVENT_BUS.post(renderEvent);
-        if (renderEvent.isShouldRender()) {
+        boolean defaultVillagerRender = villagers != null && !villagers.isEmpty();
+        MillRecipeButtonRenderEvent villagerRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
+        villagerRenderEvent.setShouldRender(false);
+        NeoForge.EVENT_BUS.post(villagerRenderEvent);
+        if (villagerRenderEvent.isShouldRender()) {
             villagerPlusButton.render(guiGraphics, font, VILLAGER_BUTTON_X, VILLAGER_BUTTON_Y, mouseX, mouseY);
+        }
+
+        /* =========================================================================================
+         * [醒目新注释] 事件1应用：询问是否绘制【建筑详情查看 (+) 按钮】
+         * ========================================================================================= */
+        boolean defaultBuildingRender = buildings != null && !buildings.isEmpty();
+        MillRecipeButtonRenderEvent buildingRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        buildingRenderEvent.setShouldRender(false);
+        NeoForge.EVENT_BUS.post(buildingRenderEvent);
+        if (buildingRenderEvent.isShouldRender()) {
+            buildingPlusButton.render(guiGraphics, font, BUILDING_BUTTON_X, BUILDING_BUTTON_Y, mouseX, mouseY);
         }
     }
 
     /**
      * [醒目新注释] JEI 19.x+ 声明式输入处理器挂载方法。
-     * 使用正确包路径的 {@link IRecipeExtrasBuilder} 与实现 {@link ScreenRectangle} 的 {@link IJeiInputHandler} 匿名类。
+     * 分别为村民详情按钮与建筑详情按钮挂载独立区域的 {@link IJeiInputHandler}。
      *
      * @param builder  JEI 额外 UI 元素与输入构建器
      * @param recipe   当前渲染的千年工艺配方
@@ -264,29 +285,47 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
      */
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, IMillRecipe recipe, IFocusGroup focuses) {
-        boolean defaultShouldRender = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty();
-        MillRecipeButtonRenderEvent renderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultShouldRender);
-        NeoForge.EVENT_BUS.post(renderEvent);
+        // 1. 村民加号按钮交互响应挂载
+        boolean defaultVillagerRender = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty();
+        MillRecipeButtonRenderEvent villagerRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
+        NeoForge.EVENT_BUS.post(villagerRenderEvent);
 
-        if (renderEvent.isShouldRender()) {
+        if (villagerRenderEvent.isShouldRender()) {
             builder.addInputHandler(new IJeiInputHandler() {
-                /**
-                 * [醒目新注释] 准确定义按钮在 JEI 配方区域内的相对矩形响应范围。
-                 */
                 @Override
                 public ScreenRectangle getArea() {
                     return new ScreenRectangle(VILLAGER_BUTTON_X, VILLAGER_BUTTON_Y, villagerPlusButton.getWidth(), villagerPlusButton.getHeight());
                 }
 
-                /**
-                 * [醒目新注释] 处理输入响应。
-                 * 移除多余的 isHovered 校验，点击直接向 {@link NeoForge#EVENT_BUS} 发送事件。
-                 */
                 @Override
                 public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                     InputConstants.Key key = input.getKey();
                     if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) { // 0 代表鼠标左键
                         NeoForge.EVENT_BUS.post(new MillRecipeButtonClickEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, mouseX, mouseY, 0));
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
+        // 2. [醒目新注释] 建筑加号按钮交互响应挂载
+        boolean defaultBuildingRender = recipe.getAssociatedBuildingIds() != null && !recipe.getAssociatedBuildingIds().isEmpty();
+        MillRecipeButtonRenderEvent buildingRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        NeoForge.EVENT_BUS.post(buildingRenderEvent);
+
+        if (buildingRenderEvent.isShouldRender()) {
+            builder.addInputHandler(new IJeiInputHandler() {
+                @Override
+                public ScreenRectangle getArea() {
+                    return new ScreenRectangle(BUILDING_BUTTON_X, BUILDING_BUTTON_Y, buildingPlusButton.getWidth(), buildingPlusButton.getHeight());
+                }
+
+                @Override
+                public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
+                    InputConstants.Key key = input.getKey();
+                    if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) { // 0 代表鼠标左键
+                        NeoForge.EVENT_BUS.post(new MillRecipeButtonClickEvent(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0));
                         return true;
                     }
                     return false;
