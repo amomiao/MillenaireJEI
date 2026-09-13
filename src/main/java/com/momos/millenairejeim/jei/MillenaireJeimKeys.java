@@ -5,8 +5,8 @@ package com.momos.millenairejeim.jei;
  * <p>包含用于断言处理缺失/任意（如“缺失文化”、“缺失建筑”）的 Key，各类 JEI Category 页签标题 Key，
  * 以及各类动态 Key 模板。</p>
  */
-public final class MillenaireJeiKeys {
-    private MillenaireJeiKeys() {}
+public final class MillenaireJeimKeys {
+    private MillenaireJeimKeys() {}
     /** 工艺的本地化需要自己翻译 */
     public static final String TEMPLATE_CRAFTING_TYPE = "jei.millenaire.crafting_type.%s";
 

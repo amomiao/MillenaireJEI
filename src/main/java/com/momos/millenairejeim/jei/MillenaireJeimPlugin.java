@@ -6,7 +6,6 @@ import com.momos.millenairejeim.jei.Trade.MillTradeCategory;
 import com.momos.millenairejeim.jei.Trade.MillTradeRecipe;
 import com.momos.millenairejeim.jei.Trade.MillTradeRecipeMaker;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
-import com.momos.millenairejeim.jei.crafting.MillCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintCategory;
@@ -39,7 +38,7 @@ import org.millenaire.item.PaintBucketItem;
  * <p>已接入 {@link MMLog} 统一进行中/英/法三语控制台日志输出。</p>
  */
 @JeiPlugin
-public class MillenaireJeiPlugin implements IModPlugin {
+public class MillenaireJeimPlugin implements IModPlugin {
     public static final ResourceLocation PLUGIN_ID = ResourceLocation.fromNamespaceAndPath("millenaire", "jei_plugin");
     public static final RecipeType<MillTradeRecipe> TRADE_SELL_TYPE = RecipeType.create("millenaire", "village_sell", MillTradeRecipe.class);
     public static final RecipeType<MillTradeRecipe> TRADE_BUY_TYPE = RecipeType.create("millenaire", "village_buy", MillTradeRecipe.class);
@@ -75,8 +74,8 @@ public class MillenaireJeiPlugin implements IModPlugin {
                 guiHelper,
                 TRADE_SELL_TYPE,
                 Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_CATEGORY_SELL,
-                        MillenaireJeiKeys.FALLBACK_CATEGORY_SELL
+                        MillenaireJeimKeys.KEY_CATEGORY_SELL,
+                        MillenaireJeimKeys.FALLBACK_CATEGORY_SELL
                 ),
                 IconPlayerSeller,
                 true
@@ -86,8 +85,8 @@ public class MillenaireJeiPlugin implements IModPlugin {
                 guiHelper,
                 TRADE_BUY_TYPE,
                 Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_CATEGORY_BUY,
-                        MillenaireJeiKeys.FALLBACK_CATEGORY_BUY
+                        MillenaireJeimKeys.KEY_CATEGORY_BUY,
+                        MillenaireJeimKeys.FALLBACK_CATEGORY_BUY
                 ),
                 IconPlayerBuy,
                 false
@@ -97,8 +96,8 @@ public class MillenaireJeiPlugin implements IModPlugin {
                 guiHelper,
                 CRAFTING_TYPE,
                 Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_CATEGORY_CRAFTING,
-                        MillenaireJeiKeys.FALLBACK_CATEGORY_CRAFTING
+                        MillenaireJeimKeys.KEY_CATEGORY_CRAFTING,
+                        MillenaireJeimKeys.FALLBACK_CATEGORY_CRAFTING
                 ),
                 new ItemStack(ModItems.TIMBER_FRAME_CROSS_ITEM.get())
         ));
@@ -107,8 +106,8 @@ public class MillenaireJeiPlugin implements IModPlugin {
                 guiHelper,
                 PAINT_TYPE,
                 Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_CATEGORY_PAINTING,
-                        MillenaireJeiKeys.FALLBACK_CATEGORY_PAINTING
+                        MillenaireJeimKeys.KEY_CATEGORY_PAINTING,
+                        MillenaireJeimKeys.FALLBACK_CATEGORY_PAINTING
                 ),
                 new ItemStack(BuiltInRegistries.ITEM.stream()
                         .filter(PaintBucketItem.class::isInstance)

@@ -1,7 +1,7 @@
 package com.momos.millenairejeim.jei.Trade;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
-import com.momos.millenairejeim.jei.MillenaireJeiPlugin;
+import com.momos.millenairejeim.jei.MillenaireJeimPlugin;
 import com.momos.millenairejeim.util.MMLog;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.resources.ResourceLocation;
@@ -145,7 +145,7 @@ public final class MillTradeRecipeMaker {
                 sellRecipes.size(), buyRecipes.size()
         );
 
-        registration.addRecipes(MillenaireJeiPlugin.TRADE_SELL_TYPE, sellRecipes);
-        registration.addRecipes(MillenaireJeiPlugin.TRADE_BUY_TYPE, buyRecipes);
+        registration.addRecipes(MillenaireJeimPlugin.TRADE_SELL_TYPE, sellRecipes);
+        registration.addRecipes(MillenaireJeimPlugin.TRADE_BUY_TYPE, buyRecipes);
     }
 }

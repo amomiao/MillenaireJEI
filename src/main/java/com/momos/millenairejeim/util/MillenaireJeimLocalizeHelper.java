@@ -1,7 +1,7 @@
 package com.momos.millenairejeim.util;
 
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
-import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -21,8 +21,8 @@ public class MillenaireJeimLocalizeHelper {
     public static void addTooltipEntry(ITooltipBuilder tooltip, Component entryName) {
         if (tooltip != null && entryName != null) {
             tooltip.add(Component.translatableWithFallback(
-                    MillenaireJeiKeys.KEY_TOOLTIP_ITEM_ENTRY,
-                    MillenaireJeiKeys.FALLBACK_TOOLTIP_ITEM_ENTRY,
+                    MillenaireJeimKeys.KEY_TOOLTIP_ITEM_ENTRY,
+                    MillenaireJeimKeys.FALLBACK_TOOLTIP_ITEM_ENTRY,
                     entryName
             ));
         }
@@ -62,7 +62,7 @@ public class MillenaireJeimLocalizeHelper {
      */
     public static Component getBuildingText(ResourceLocation cultureId, String buildingPath, boolean isDuplicate) {
         if (cultureId == null || buildingPath == null) {
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_SHOP, MillenaireJeiKeys.FALLBACK_MISSING_SHOP);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_SHOP, MillenaireJeimKeys.FALLBACK_MISSING_SHOP);
         }
         MutableComponent nameComponent = MillenaireLocalizeHelper.getCultureName(cultureId)
                 .append(" - ")
@@ -88,14 +88,14 @@ public class MillenaireJeimLocalizeHelper {
 
     public static Component getCraftingVillagerText(VillagerType villagerType){
         if(villagerType == null){
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_VILLAGER, MillenaireJeiKeys.FALLBACK_MISSING_VILLAGER);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_VILLAGER, MillenaireJeimKeys.FALLBACK_MISSING_VILLAGER);
         }
         return MillenaireLocalizeHelper.getCultureName(villagerType.culture()).append(" - ").append(MillenaireLocalizeHelper.getVillagerName(villagerType));
     }
 
     public static Component getCraftingBuildingText(BuildingPlanSet buildingPlanSet){
         if(buildingPlanSet == null){
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_BUILDING, MillenaireJeiKeys.FALLBACK_MISSING_BUILDING);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_BUILDING, MillenaireJeimKeys.FALLBACK_MISSING_BUILDING);
         }
         return MillenaireLocalizeHelper.getCultureName(buildingPlanSet.culture()).append(" - ").append(MillenaireLocalizeHelper.getBuildingName(buildingPlanSet));
     }

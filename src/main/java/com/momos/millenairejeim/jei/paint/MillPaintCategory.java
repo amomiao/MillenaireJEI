@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.jei.paint;
 
-import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -88,8 +88,8 @@ public class MillPaintCategory implements IRecipeCategory<MillPaintRecipe> {
         // 渲染目标颜色文本
         Component targetColorText = Component.translatable("color.minecraft." + recipe.getTargetColor().getName());
         Component colorInfo = Component.translatableWithFallback(
-                MillenaireJeiKeys.KEY_PAINT_TARGET_COLOR,
-                MillenaireJeiKeys.FALLBACK_PAINT_TARGET_COLOR,
+                MillenaireJeimKeys.KEY_PAINT_TARGET_COLOR,
+                MillenaireJeimKeys.FALLBACK_PAINT_TARGET_COLOR,
                 targetColorText
         );
         guiGraphics.drawString(font, colorInfo, 5, 48, 0x666666, false);

@@ -1,7 +1,7 @@
 package com.momos.millenairejeim.jei.paint;
 
-import com.momos.millenairejeim.jei.MillenaireJeiKeys;
-import com.momos.millenairejeim.jei.MillenaireJeiPlugin;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
+import com.momos.millenairejeim.jei.MillenaireJeimPlugin;
 import com.momos.millenairejeim.util.MMLog;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,28 +39,28 @@ public final class MillPaintRecipeMaker {
         // 2. [新注释] 映射 ModBlocks 中支持 DyeColor 的 5 种方块族，改用 {@link MillenaireJeiKeys} 统一管理的 Key 与带 fallback 回退英文
         List<BlockFamily> blockFamilies = List.of(
                 new BlockFamily(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_PAINT_PAINTED_BRICKS,
-                        MillenaireJeiKeys.FALLBACK_PAINT_PAINTED_BRICKS
+                        MillenaireJeimKeys.KEY_PAINT_PAINTED_BRICKS,
+                        MillenaireJeimKeys.FALLBACK_PAINT_PAINTED_BRICKS
                 ), ModBlocks.PAINTED_BRICKS),
 
                 new BlockFamily(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_PAINT_DECORATED_BRICKS,
-                        MillenaireJeiKeys.FALLBACK_PAINT_DECORATED_BRICKS
+                        MillenaireJeimKeys.KEY_PAINT_DECORATED_BRICKS,
+                        MillenaireJeimKeys.FALLBACK_PAINT_DECORATED_BRICKS
                 ), ModBlocks.DECORATED_BRICKS),
 
                 new BlockFamily(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_PAINT_PAINTED_BRICK_STAIRS,
-                        MillenaireJeiKeys.FALLBACK_PAINT_PAINTED_BRICK_STAIRS
+                        MillenaireJeimKeys.KEY_PAINT_PAINTED_BRICK_STAIRS,
+                        MillenaireJeimKeys.FALLBACK_PAINT_PAINTED_BRICK_STAIRS
                 ), ModBlocks.PAINTED_BRICK_STAIRS),
 
                 new BlockFamily(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_PAINT_PAINTED_BRICK_SLABS,
-                        MillenaireJeiKeys.FALLBACK_PAINT_PAINTED_BRICK_SLABS
+                        MillenaireJeimKeys.KEY_PAINT_PAINTED_BRICK_SLABS,
+                        MillenaireJeimKeys.FALLBACK_PAINT_PAINTED_BRICK_SLABS
                 ), ModBlocks.PAINTED_BRICK_SLABS),
 
                 new BlockFamily(Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_PAINT_PAINTED_BRICK_WALLS,
-                        MillenaireJeiKeys.FALLBACK_PAINT_PAINTED_BRICK_WALLS
+                        MillenaireJeimKeys.KEY_PAINT_PAINTED_BRICK_WALLS,
+                        MillenaireJeimKeys.FALLBACK_PAINT_PAINTED_BRICK_WALLS
                 ), ModBlocks.PAINTED_BRICK_WALLS)
         );
 
@@ -111,7 +111,7 @@ public final class MillPaintRecipeMaker {
                 recipes.size()
         );
 
-        registration.addRecipes(MillenaireJeiPlugin.PAINT_TYPE, recipes);
+        registration.addRecipes(MillenaireJeimPlugin.PAINT_TYPE, recipes);
     }
 
     /**

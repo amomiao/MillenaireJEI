@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.helper;
 
-import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -26,14 +26,14 @@ public final class MillenaireLocalizeHelper {
 
     public static MutableComponent getCultureName(ResourceLocation cultureId) {
         if (cultureId == null) {
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_CULTURE, MillenaireJeiKeys.FALLBACK_MISSING_CULTURE);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_CULTURE, MillenaireJeimKeys.FALLBACK_MISSING_CULTURE);
         }
         return Component.literal(MillenaireAPIHelper.getCulture(cultureId).displayName());
     }
 
     public static Component getVillagerName(String culture, String villagerId) {
         if (culture == null || villagerId == null) {
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_VILLAGER, MillenaireJeiKeys.FALLBACK_MISSING_VILLAGER);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_VILLAGER, MillenaireJeimKeys.FALLBACK_MISSING_VILLAGER);
         }
         String key = String.format(TEMPLATE_VILLAGER, culture, villagerId);
         return Component.translatableWithFallback(key, villagerId);
@@ -41,7 +41,7 @@ public final class MillenaireLocalizeHelper {
 
     public static Component getVillagerName(VillagerType villagerType) {
         if (villagerType == null || villagerType.id() == null) {
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_VILLAGER, MillenaireJeiKeys.FALLBACK_MISSING_VILLAGER);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_VILLAGER, MillenaireJeimKeys.FALLBACK_MISSING_VILLAGER);
         }
         String path = villagerType.id().getPath();
         int slashIndex = path.indexOf('/');
@@ -56,7 +56,7 @@ public final class MillenaireLocalizeHelper {
 
     public static Component getBuildingName(String culture, String buildingId) {
         if (culture == null || buildingId == null) {
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_BUILDING, MillenaireJeiKeys.FALLBACK_MISSING_BUILDING);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_BUILDING, MillenaireJeimKeys.FALLBACK_MISSING_BUILDING);
         }
         String key = String.format(TEMPLATE_BUILDING, culture, buildingId);
         return Component.translatableWithFallback(key, buildingId);
@@ -72,7 +72,7 @@ public final class MillenaireLocalizeHelper {
 
     public static Component getGoalName(String goalId) {
         if (goalId == null) {
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_GOAL, MillenaireJeiKeys.FALLBACK_MISSING_GOAL);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_GOAL, MillenaireJeimKeys.FALLBACK_MISSING_GOAL);
         }
         String key = String.format(TEMPLATE_GOAL, goalId);
         return Component.translatableWithFallback(key, goalId);
@@ -90,7 +90,7 @@ public final class MillenaireLocalizeHelper {
             return Component.literal("Unknown");
         }
         String id = handlerId.toLowerCase();
-        String craftingTypeKey = String.format(MillenaireJeiKeys.TEMPLATE_CRAFTING_TYPE, id);
+        String craftingTypeKey = String.format(MillenaireJeimKeys.TEMPLATE_CRAFTING_TYPE, id);
         // [醒目新注释] 彻底移除 switch 映射与 default 常量，直接使用传入的 handlerId 原名作为 Fallback
         return Component.translatableWithFallback(craftingTypeKey, handlerId);
     }

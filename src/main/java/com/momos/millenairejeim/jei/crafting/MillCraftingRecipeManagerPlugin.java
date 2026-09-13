@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.jei.crafting;
 
-import com.momos.millenairejeim.jei.MillenaireJeiPlugin;
+import com.momos.millenairejeim.jei.MillenaireJeimPlugin;
 import com.momos.millenairejeim.jei.crafting.type.GoalCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.AbstractMillCraftingType;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
@@ -53,7 +53,7 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
     public <V> List<RecipeType<?>> getRecipeTypes(IFocus<V> focus) {
         if (Millenaire.getGoalRegistry() != null) {
             // 仅暴露唯一的工艺页签
-            return List.of(MillenaireJeiPlugin.CRAFTING_TYPE);
+            return List.of(MillenaireJeimPlugin.CRAFTING_TYPE);
         }
         return Collections.emptyList();
     }
@@ -76,7 +76,7 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> getRecipes(IRecipeCategory<T> recipeCategory) {
-        if (recipeCategory.getRecipeType().equals(MillenaireJeiPlugin.CRAFTING_TYPE)) {
+        if (recipeCategory.getRecipeType().equals(MillenaireJeimPlugin.CRAFTING_TYPE)) {
             GoalRegistry goalRegistry = Millenaire.getGoalRegistry();
             if (goalRegistry != null) {
                 if (cachedRecipes == null) {

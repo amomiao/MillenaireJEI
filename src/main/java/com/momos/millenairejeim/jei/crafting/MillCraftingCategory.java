@@ -4,7 +4,7 @@ package com.momos.millenairejeim.jei.crafting;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.momos.millenairejeim.gui.widget.MillPlusButtonWidget;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
-import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
@@ -179,15 +179,15 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
         String villagerSummary;
         if (villagers == null || villagers.isEmpty()) {
             villagerSummary = Component.translatableWithFallback(
-                    MillenaireJeiKeys.KEY_NONE_VILLAGER,
-                    MillenaireJeiKeys.FALLBACK_NONE_VILLAGER
+                    MillenaireJeimKeys.KEY_NONE_VILLAGER,
+                    MillenaireJeimKeys.FALLBACK_NONE_VILLAGER
             ).getString();
         } else {
             String firstVillagerName = MillenaireJeimLocalizeHelper.getCraftingVillagerText(villagers.get(0)).getString();
             if (villagers.size() > 1) {
                 String countSuffix = Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_COUNT_PEOPLE,
-                        MillenaireJeiKeys.FALLBACK_COUNT_PEOPLE,
+                        MillenaireJeimKeys.KEY_COUNT_PEOPLE,
+                        MillenaireJeimKeys.FALLBACK_COUNT_PEOPLE,
                         villagers.size()
                 ).getString();
                 villagerSummary = firstVillagerName + " " + countSuffix;
@@ -201,15 +201,15 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
         String buildingSummary;
         if (buildings == null || buildings.isEmpty()) {
             buildingSummary = Component.translatableWithFallback(
-                    MillenaireJeiKeys.KEY_NONE_BUILDING,
-                    MillenaireJeiKeys.FALLBACK_NONE_BUILDING
+                    MillenaireJeimKeys.KEY_NONE_BUILDING,
+                    MillenaireJeimKeys.FALLBACK_NONE_BUILDING
             ).getString();
         } else {
             String firstBuildingName = MillenaireJeimLocalizeHelper.getCraftingBuildingText(buildings.get(0)).getString();
             if (buildings.size() > 1) {
                 String countSuffix = Component.translatableWithFallback(
-                        MillenaireJeiKeys.KEY_COUNT_PLACES,
-                        MillenaireJeiKeys.FALLBACK_COUNT_PLACES,
+                        MillenaireJeimKeys.KEY_COUNT_PLACES,
+                        MillenaireJeimKeys.FALLBACK_COUNT_PLACES,
                         buildings.size()
                 ).getString();
                 buildingSummary = firstBuildingName + " " + countSuffix;
@@ -220,16 +220,16 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
 
         // 6. 获取固定标签文本[cite: 15]
         String labelCraftingType = Component.translatableWithFallback(
-                MillenaireJeiKeys.KEY_LABEL_CRAFTING_TYPE,
-                MillenaireJeiKeys.FALLBACK_LABEL_CRAFTING_TYPE
+                MillenaireJeimKeys.KEY_LABEL_CRAFTING_TYPE,
+                MillenaireJeimKeys.FALLBACK_LABEL_CRAFTING_TYPE
         ).getString();
         String labelVillager = Component.translatableWithFallback(
-                MillenaireJeiKeys.KEY_LABEL_VILLAGER,
-                MillenaireJeiKeys.FALLBACK_LABEL_VILLAGER
+                MillenaireJeimKeys.KEY_LABEL_VILLAGER,
+                MillenaireJeimKeys.FALLBACK_LABEL_VILLAGER
         ).getString();
         String labelBuilding = Component.translatableWithFallback(
-                MillenaireJeiKeys.KEY_LABEL_BUILDING,
-                MillenaireJeiKeys.FALLBACK_LABEL_BUILDING
+                MillenaireJeimKeys.KEY_LABEL_BUILDING,
+                MillenaireJeimKeys.FALLBACK_LABEL_BUILDING
         ).getString();
 
         // 7. 渲染文本内容[cite: 15]
@@ -304,8 +304,8 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
                 List<VillagerType> villagers = recipe.getVillagerTypes();
                 if (villagers != null && villagers.size() > 1) {
                     tooltip.add(Component.translatableWithFallback(
-                            MillenaireJeiKeys.KEY_TOOLTIP_VILLAGERS_HEADER,
-                            MillenaireJeiKeys.FALLBACK_TOOLTIP_VILLAGERS_HEADER
+                            MillenaireJeimKeys.KEY_TOOLTIP_VILLAGERS_HEADER,
+                            MillenaireJeimKeys.FALLBACK_TOOLTIP_VILLAGERS_HEADER
                     ));
                     villagers.forEach(v -> {
                         Component vName = MillenaireJeimLocalizeHelper.getCraftingVillagerText(v);
@@ -319,8 +319,8 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
                 List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
                 if (buildings != null && buildings.size() > 1) {
                     tooltip.add(Component.translatableWithFallback(
-                            MillenaireJeiKeys.KEY_TOOLTIP_BUILDINGS_HEADER,
-                            MillenaireJeiKeys.FALLBACK_TOOLTIP_BUILDINGS_HEADER
+                            MillenaireJeimKeys.KEY_TOOLTIP_BUILDINGS_HEADER,
+                            MillenaireJeimKeys.FALLBACK_TOOLTIP_BUILDINGS_HEADER
                     ));
                     buildings.forEach(b -> {
                         Component bName = MillenaireJeimLocalizeHelper.getCraftingBuildingText(b);

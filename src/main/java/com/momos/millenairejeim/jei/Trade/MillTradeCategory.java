@@ -2,7 +2,7 @@ package com.momos.millenairejeim.jei.Trade;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
-import com.momos.millenairejeim.jei.MillenaireJeiKeys;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
@@ -106,8 +106,8 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
          */
         if (recipe.getTradeType() == MillTradeRecipe.TradeType.VILLAGE_BUYS_OPTIONAL) {
             Component optionalBuyComp = Component.translatableWithFallback(
-                    MillenaireJeiKeys.KEY_TRADE_OPTIONAL_BUY,
-                    MillenaireJeiKeys.FALLBACK_TRADE_OPTIONAL_BUY
+                    MillenaireJeimKeys.KEY_TRADE_OPTIONAL_BUY,
+                    MillenaireJeimKeys.FALLBACK_TRADE_OPTIONAL_BUY
             );
             int tagWidth = font.width(optionalBuyComp);
             guiGraphics.drawString(font, optionalBuyComp, 155 - tagWidth, 4, 0x888888, false);
@@ -124,8 +124,8 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
          */
         if (recipe.getTradeGood().minReputation() > 0) {
             Component repInfo = Component.translatableWithFallback(
-                    MillenaireJeiKeys.KEY_TRADE_MIN_REPUTATION,
-                    MillenaireJeiKeys.FALLBACK_TRADE_MIN_REPUTATION,
+                    MillenaireJeimKeys.KEY_TRADE_MIN_REPUTATION,
+                    MillenaireJeimKeys.FALLBACK_TRADE_MIN_REPUTATION,
                     recipe.getTradeGood().minReputation()
             );
             guiGraphics.drawString(font, repInfo, 5, 48, 0xAA0000, false);
@@ -141,8 +141,8 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
             }
 
             tooltip.add(Component.translatableWithFallback(
-                    MillenaireJeiKeys.KEY_TOOLTIP_BUILDINGS_HEADER,
-                    MillenaireJeiKeys.FALLBACK_TOOLTIP_BUILDINGS_HEADER
+                    MillenaireJeimKeys.KEY_TOOLTIP_BUILDINGS_HEADER,
+                    MillenaireJeimKeys.FALLBACK_TOOLTIP_BUILDINGS_HEADER
             ));
 
             for (String bKey : buildingKeys) {
@@ -167,7 +167,7 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
      */
     private Component buildShopSummaryComponent(ResourceLocation cultureId, String shopId, Set<String> buildingKeys) {
         if (cultureId == null || shopId == null) {
-            return Component.translatableWithFallback(MillenaireJeiKeys.KEY_MISSING_SHOP, MillenaireJeiKeys.FALLBACK_MISSING_SHOP);
+            return Component.translatableWithFallback(MillenaireJeimKeys.KEY_MISSING_SHOP, MillenaireJeimKeys.FALLBACK_MISSING_SHOP);
         }
 
         if (buildingKeys == null || buildingKeys.isEmpty()) {
@@ -192,8 +192,8 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         int extraPlaces = keyList.size() - 1;
         if (extraPlaces > 0) {
             String countSuffix = Component.translatableWithFallback(
-                    MillenaireJeiKeys.KEY_COUNT_PLACES,
-                    MillenaireJeiKeys.FALLBACK_COUNT_PLACES,
+                    MillenaireJeimKeys.KEY_COUNT_PLACES,
+                    MillenaireJeimKeys.FALLBACK_COUNT_PLACES,
                     extraPlaces
             ).getString();
             summary.append(" ").append(countSuffix);
