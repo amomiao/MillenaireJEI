@@ -2,8 +2,8 @@ package com.momos.millenairejeim.jei.crafting.type;
 
 import com.google.gson.JsonObject;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
-import com.momos.millenairejeim.jei.IMillRecipe;
-import com.momos.millenairejeim.jei.MillBaseRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.millenaire.culture.VillagerType;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * 对应 handler: "crafting", "smelting" 的配方实体。
  * 纯数据模型，渲染与 Tooltip 全量交由 {@link com.momos.millenairejeim.jei.crafting.MillCraftingCategory} 负责。
  */
-public class GoalCraftingRecipe extends MillBaseRecipe {
+public class GoalCraftingRecipe extends MillCraftingBaseRecipe {
 
     private final boolean isSmelting;
 
@@ -70,8 +70,8 @@ public class GoalCraftingRecipe extends MillBaseRecipe {
 
             parseInputs(params, rawInputs);
 
-            List<IMillRecipe.IngredientWithCount> inputs = rawInputs.stream()
-                    .map(raw -> new IMillRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
+            List<IMillCraftingRecipe.IngredientWithCount> inputs = rawInputs.stream()
+                    .map(raw -> new IMillCraftingRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
                     .collect(Collectors.toList());
 
             parseOutputs(type, params, outputs);

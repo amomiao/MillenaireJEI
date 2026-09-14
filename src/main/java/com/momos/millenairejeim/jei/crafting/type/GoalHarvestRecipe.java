@@ -2,8 +2,8 @@ package com.momos.millenairejeim.jei.crafting.type;
 
 import com.google.gson.JsonObject;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
-import com.momos.millenairejeim.jei.IMillRecipe;
-import com.momos.millenairejeim.jei.MillBaseRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * 对应 handler: "harvesting", "fruit_harvesting", "cocoa_harvesting" 等收割/采摘/收获配方实体。
  * 包含作物目标方块、成熟度属性、显式收获物及灌溉额外产物等扩展数据。
  */
-public class GoalHarvestRecipe extends MillBaseRecipe {
+public class GoalHarvestRecipe extends MillCraftingBaseRecipe {
 
     // region 预留扩展字段 (便于后续 JEI GUI 绘制、Tooltip 展开或 API 联动)
     private final String targetBlock;
@@ -87,7 +87,7 @@ public class GoalHarvestRecipe extends MillBaseRecipe {
          * 解析 {@link GatheringType} 中 handlerParams 的收割参数并生成 {@link GoalHarvestRecipe} 实例。
          */
         @Override
-        public IMillRecipe parse(GatheringType type, List<VillagerType> villagers) {
+        public IMillCraftingRecipe parse(GatheringType type, List<VillagerType> villagers) {
             if (type == null) return null;
 
             JsonObject params = type.handlerParams();
@@ -171,8 +171,8 @@ public class GoalHarvestRecipe extends MillBaseRecipe {
                 return null;
             }
 
-            List<IMillRecipe.IngredientWithCount> inputs = rawInputs.stream()
-                    .map(raw -> new IMillRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
+            List<IMillCraftingRecipe.IngredientWithCount> inputs = rawInputs.stream()
+                    .map(raw -> new IMillCraftingRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
                     .collect(Collectors.toList());
 
             String goalKey = type.id() != null ? type.id().getPath() : "unknown";

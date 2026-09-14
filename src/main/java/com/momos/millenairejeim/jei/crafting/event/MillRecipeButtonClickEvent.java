@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.jei.crafting.event;
 
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import net.neoforged.bus.api.Event;
 
 /**
@@ -8,13 +8,13 @@ import net.neoforged.bus.api.Event;
  */
 public class MillRecipeButtonClickEvent extends Event {
 
-    private final IMillRecipe recipe;
+    private final IMillCraftingRecipe recipe;
     private final String buttonId;
     private final double mouseX;
     private final double mouseY;
     private final int mouseButton;
 
-    public MillRecipeButtonClickEvent(IMillRecipe recipe, String buttonId, double mouseX, double mouseY, int mouseButton) {
+    public MillRecipeButtonClickEvent(IMillCraftingRecipe recipe, String buttonId, double mouseX, double mouseY, int mouseButton) {
         this.recipe = recipe;
         this.buttonId = buttonId;
         this.mouseX = mouseX;
@@ -22,7 +22,7 @@ public class MillRecipeButtonClickEvent extends Event {
         this.mouseButton = mouseButton;
     }
 
-    public IMillRecipe getRecipe() {
+    public IMillCraftingRecipe getRecipe() {
         return recipe;
     }
 

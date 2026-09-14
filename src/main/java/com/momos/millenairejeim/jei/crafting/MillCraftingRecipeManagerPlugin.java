@@ -3,8 +3,8 @@ package com.momos.millenairejeim.jei.crafting;
 import com.momos.millenairejeim.jei.MillenaireJeimPlugin;
 import com.momos.millenairejeim.jei.crafting.type.GoalCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.AbstractMillCraftingType;
-import com.momos.millenairejeim.jei.IMillRecipe;
-import com.momos.millenairejeim.jei.MillBaseRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.recipe.IFocus;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -47,7 +47,7 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
             "shearing"
     );
 
-    private List<IMillRecipe> cachedRecipes = null;
+    private List<IMillCraftingRecipe> cachedRecipes = null;
 
     @Override
     public <V> List<RecipeType<?>> getRecipeTypes(IFocus<V> focus) {
@@ -66,7 +66,7 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
     /// 1.2-对Goal进行解析 [MillCraftingRecipeMaker#getRecipesByHandlers],`Goal`类型与对应类型匹配如[#CraftTypeSet]的对象会被解析
     /// 1.3-得到被激活的有效`Goal`[GoalRegistry#getGatheringGoals]
     /// 1.4-遍历对每个`Goal`解析,但此方法只是一个分发[MillCraftingRecipe#parse]
-    /// 1.4.1-如[GoalCraftingRecipe],他的父类为[MillBaseRecipe]祖类为[IMillRecipe],他有内部类[GoalCraftingRecipe.Parser]此内部类继承[AbstractMillCraftingType]
+    /// 1.4.1-如[GoalCraftingRecipe],他的父类为[MillCraftingBaseRecipe]祖类为[IMillCraftingRecipe],他有内部类[GoalCraftingRecipe.Parser]此内部类继承[AbstractMillCraftingType]
     /// 1.4.2-[MillCraftingRecipe#parse]分发时会调用[GoalCraftingRecipe.Parser#supports]检查解析是否由[GoalCraftingRecipe]进行
     /// 1.4.3-通过[GoalCraftingRecipe.Parser#parse]完成一条内容的解析，方法是`非空`并且匹配[#CraftTypeSet]
     /// 1.5-遍历完成获得解析结果 [#cachedRecipes]
@@ -105,14 +105,14 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
         }
         RecipeIngredientRole role = focus.getRole();
         return (List<T>) allRecipes.stream()
-                .filter(r -> r instanceof IMillRecipe)
-                .map(r -> (IMillRecipe) r)
+                .filter(r -> r instanceof IMillCraftingRecipe)
+                .map(r -> (IMillCraftingRecipe) r)
                 .filter(recipe -> matchesFocus(recipe, focusStack, role))
                 .toList();
     }
 
-    /** [新注释] 修正形参类型为 {@link IMillRecipe} 接口，兼容单一页签下的所有多态工艺类。*/
-    private boolean matchesFocus(IMillRecipe recipe, ItemStack focusStack, RecipeIngredientRole role) {
+    /** [新注释] 修正形参类型为 {@link IMillCraftingRecipe} 接口，兼容单一页签下的所有多态工艺类。*/
+    private boolean matchesFocus(IMillCraftingRecipe recipe, ItemStack focusStack, RecipeIngredientRole role) {
         if (role == RecipeIngredientRole.INPUT) {
             return recipe.getInputs().stream()
                     .anyMatch(input -> input.ingredient().test(focusStack));

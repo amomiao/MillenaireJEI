@@ -4,8 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
-import com.momos.millenairejeim.jei.IMillRecipe;
-import com.momos.millenairejeim.jei.MillBaseRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * 对应 handler: "mining", "fishing", "fishing_inuit" 等战利品/采掘/钓鱼配方实体。
  * 纯数据模型，渲染与 Tooltip 全量交由 {@link com.momos.millenairejeim.jei.crafting.MillCraftingCategory} 负责。
  */
-public class GoalLootRecipe extends MillBaseRecipe {
+public class GoalLootRecipe extends MillCraftingBaseRecipe {
 
     public GoalLootRecipe(ResourceLocation id, String goalKey, String handlerId,
                           List<IngredientWithCount> inputs, List<ItemStack> outputs,
@@ -48,7 +48,7 @@ public class GoalLootRecipe extends MillBaseRecipe {
          * 解析 {@link GatheringType} 中 handlerParams 的 loot 结构并生成 {@link GoalLootRecipe} 实例。
          */
         @Override
-        public IMillRecipe parse(GatheringType type, List<VillagerType> villagers) {
+        public IMillCraftingRecipe parse(GatheringType type, List<VillagerType> villagers) {
             if (type == null) return null;
 
             JsonObject params = type.handlerParams();
@@ -90,8 +90,8 @@ public class GoalLootRecipe extends MillBaseRecipe {
                 return null;
             }
 
-            List<IMillRecipe.IngredientWithCount> inputs = rawInputs.stream()
-                    .map(raw -> new IMillRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
+            List<IMillCraftingRecipe.IngredientWithCount> inputs = rawInputs.stream()
+                    .map(raw -> new IMillCraftingRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
                     .collect(Collectors.toList());
 
             String goalKey = type.id() != null ? type.id().getPath() : "unknown";

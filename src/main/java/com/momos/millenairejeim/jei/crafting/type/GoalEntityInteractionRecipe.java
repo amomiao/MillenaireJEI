@@ -4,8 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
-import com.momos.millenairejeim.jei.IMillRecipe;
-import com.momos.millenairejeim.jei.MillBaseRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * 对应 handler: "slaughter", "breeding", "shearing" 等与实体互动（屠宰、繁殖、剪毛）的配方实体。
  */
-public class GoalEntityInteractionRecipe extends MillBaseRecipe {
+public class GoalEntityInteractionRecipe extends MillCraftingBaseRecipe {
 
     // region 预留扩展字段
     private final String targetEntityType;
@@ -70,7 +70,7 @@ public class GoalEntityInteractionRecipe extends MillBaseRecipe {
         }
 
         @Override
-        public IMillRecipe parse(GatheringType type, List<VillagerType> villagers) {
+        public IMillCraftingRecipe parse(GatheringType type, List<VillagerType> villagers) {
             if (type == null) return null;
 
             JsonObject params = type.handlerParams();
@@ -157,8 +157,8 @@ public class GoalEntityInteractionRecipe extends MillBaseRecipe {
                 return null;
             }
 
-            List<IMillRecipe.IngredientWithCount> inputs = rawInputs.stream()
-                    .map(raw -> new IMillRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
+            List<IMillCraftingRecipe.IngredientWithCount> inputs = rawInputs.stream()
+                    .map(raw -> new IMillCraftingRecipe.IngredientWithCount(raw.ingredient(), raw.count()))
                     .collect(Collectors.toList());
 
             String goalKey = type.id() != null ? type.id().getPath() : "unknown";

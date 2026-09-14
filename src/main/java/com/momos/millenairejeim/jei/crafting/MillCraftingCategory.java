@@ -8,7 +8,7 @@ import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -41,7 +41,7 @@ import java.util.List;
  * 千年工艺 JEI GUI 界面绘制与分类定义。
  * 重新由 Category 统一负责背景、槽位、动画及文本和 Tooltip 的全量渲染。
  */
-public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
+public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe> {
     public static final String BUTTON_ID_VILLAGER_DETAIL = "villager_detail_plus";
     // [醒目新注释] 新增建筑详情按钮 ID 标识，用于解耦村民与建筑按钮逻辑
     public static final String BUTTON_ID_BUILDING_DETAIL = "building_detail_plus";
@@ -54,7 +54,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     private static final int BUILDING_BUTTON_X = 142;
     private static final int BUILDING_BUTTON_Y = 94;
 
-    private final RecipeType<IMillRecipe> recipeType;
+    private final RecipeType<IMillCraftingRecipe> recipeType;
     private final Component title;
     private final IDrawable icon;
 
@@ -70,7 +70,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     // [醒目新注释] 新建建筑要素右侧的加号按钮实例
     private final MillPlusButtonWidget buildingPlusButton = new MillPlusButtonWidget(12, 12);
 
-    public MillCraftingCategory(IGuiHelper guiHelper, RecipeType<IMillRecipe> recipeType, Component title, ItemStack iconStack) {
+    public MillCraftingCategory(IGuiHelper guiHelper, RecipeType<IMillCraftingRecipe> recipeType, Component title, ItemStack iconStack) {
         this.recipeType = recipeType;
         this.title = title;
         this.icon = guiHelper.createDrawableItemStack(iconStack);
@@ -93,7 +93,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     }
 
     @Override
-    public RecipeType<IMillRecipe> getRecipeType() {
+    public RecipeType<IMillCraftingRecipe> getRecipeType() {
         return recipeType;
     }
 
@@ -118,12 +118,12 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, IMillRecipe recipe, IFocusGroup focuses) {
-        List<IMillRecipe.IngredientWithCount> inputs = recipe.getInputs();
+    public void setRecipe(IRecipeLayoutBuilder builder, IMillCraftingRecipe recipe, IFocusGroup focuses) {
+        List<IMillCraftingRecipe.IngredientWithCount> inputs = recipe.getInputs();
         for (int i = 0; i < inputs.size(); i++) {
             int x = 6 + (i % 3) * 18;
             int y = 6 + (i / 3) * 18;
-            IMillRecipe.IngredientWithCount input = inputs.get(i);
+            IMillCraftingRecipe.IngredientWithCount input = inputs.get(i);
 
             ItemStack[] displayStacks = Arrays.stream(input.ingredient().getItems())
                     .map(stack -> {
@@ -158,7 +158,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     }
 
     @Override
-    public void draw(IMillRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(IMillCraftingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         if (recipe == null) return;
 
         Font font = Minecraft.getInstance().font;
@@ -284,7 +284,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
      * @param focuses  当前 JEI 焦点组
      */
     @Override
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, IMillRecipe recipe, IFocusGroup focuses) {
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, IMillCraftingRecipe recipe, IFocusGroup focuses) {
         // 1. 村民加号按钮交互响应挂载
         boolean defaultVillagerRender = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty();
         MillRecipeButtonRenderEvent villagerRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
@@ -335,7 +335,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillRecipe> {
     }
 
     @Override
-    public void getTooltip(ITooltipBuilder tooltip, IMillRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+    public void getTooltip(ITooltipBuilder tooltip, IMillCraftingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
         if (recipe == null) return;
 
         if (mouseX >= 6 && mouseX <= 154) {

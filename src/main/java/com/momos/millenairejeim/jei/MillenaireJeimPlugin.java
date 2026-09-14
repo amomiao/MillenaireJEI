@@ -7,6 +7,7 @@ import com.momos.millenairejeim.jei.Trade.MillTradeRecipe;
 import com.momos.millenairejeim.jei.Trade.MillTradeRecipeMaker;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintCategory;
 import com.momos.millenairejeim.jei.paint.MillPaintRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintRecipeMaker;
@@ -41,7 +42,7 @@ public class MillenaireJeimPlugin implements IModPlugin {
     public static final ResourceLocation PLUGIN_ID = ResourceLocation.fromNamespaceAndPath("millenaire", "jei_plugin");
     public static final RecipeType<MillTradeRecipe> TRADE_SELL_TYPE = RecipeType.create("millenaire", "village_sell", MillTradeRecipe.class);
     public static final RecipeType<MillTradeRecipe> TRADE_BUY_TYPE = RecipeType.create("millenaire", "village_buy", MillTradeRecipe.class);
-    public static final RecipeType<IMillRecipe> CRAFTING_TYPE = RecipeType.create("millenaire", "crafting", IMillRecipe.class);
+    public static final RecipeType<IMillCraftingRecipe> CRAFTING_TYPE = RecipeType.create("millenaire", "crafting", IMillCraftingRecipe.class);
     public static final RecipeType<MillPaintRecipe> PAINT_TYPE = RecipeType.create("millenaire", "painting", MillPaintRecipe.class);
 
     @Override

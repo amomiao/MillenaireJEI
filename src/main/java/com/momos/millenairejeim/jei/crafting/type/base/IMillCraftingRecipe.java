@@ -1,5 +1,5 @@
 // region IMillRecipe.java
-package com.momos.millenairejeim.jei;
+package com.momos.millenairejeim.jei.crafting.type.base;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 千年 JEI 配方通用接口契约。
  */
-public interface IMillRecipe {
+public interface IMillCraftingRecipe {
 
     record IngredientWithCount(Ingredient ingredient, int count) {}
 

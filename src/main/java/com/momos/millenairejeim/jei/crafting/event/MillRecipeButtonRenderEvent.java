@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.jei.crafting.event;
 
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import net.neoforged.bus.api.Event;
 
 /**
@@ -8,17 +8,17 @@ import net.neoforged.bus.api.Event;
  */
 public class MillRecipeButtonRenderEvent extends Event {
 
-    private final IMillRecipe recipe;
+    private final IMillCraftingRecipe recipe;
     private final String buttonId;
     private boolean shouldRender;
 
-    public MillRecipeButtonRenderEvent(IMillRecipe recipe, String buttonId, boolean defaultShouldRender) {
+    public MillRecipeButtonRenderEvent(IMillCraftingRecipe recipe, String buttonId, boolean defaultShouldRender) {
         this.recipe = recipe;
         this.buttonId = buttonId;
         this.shouldRender = defaultShouldRender;
     }
 
-    public IMillRecipe getRecipe() {
+    public IMillCraftingRecipe getRecipe() {
         return recipe;
     }
 

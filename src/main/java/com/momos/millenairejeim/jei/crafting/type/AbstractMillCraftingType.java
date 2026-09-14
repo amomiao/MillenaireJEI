@@ -2,7 +2,7 @@ package com.momos.millenairejeim.jei.crafting.type;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -47,13 +47,13 @@ public abstract class AbstractMillCraftingType {
     public abstract boolean supports(String handlerId, GatheringType type);
 
     /**
-     * [新注释] 将 {@link GatheringType} 解析转换为具体的 {@link IMillRecipe} 配方实体。
+     * [新注释] 将 {@link GatheringType} 解析转换为具体的 {@link IMillCraftingRecipe} 配方实体。
      *
      * @param type 底层千年 Goal 采集/加工类型数据实体 {@link GatheringType}
      * @param villagers 关联具备制作能力的村民类型 {@link VillagerType} 列表
-     * @return 解析生成的 {@link IMillRecipe} 实例，若解析失败或无有效产物则返回 {@code null}
+     * @return 解析生成的 {@link IMillCraftingRecipe} 实例，若解析失败或无有效产物则返回 {@code null}
      */
-    public abstract IMillRecipe parse(GatheringType type, List<VillagerType> villagers);
+    public abstract IMillCraftingRecipe parse(GatheringType type, List<VillagerType> villagers);
 
     /**
      * [新注释] 通用输入项解析逻辑，兼容多种 JSON 节点表达方式。

@@ -1,6 +1,6 @@
 package com.momos.millenairejeim.jei.crafting.event;
 
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.recipe.IFocusGroup;
 import net.neoforged.bus.api.Event;
@@ -12,10 +12,10 @@ import net.neoforged.bus.api.Event;
 public class MillRecipeSetSlotEvent extends Event {
 
     private final IRecipeLayoutBuilder builder;
-    private final IMillRecipe recipe;
+    private final IMillCraftingRecipe recipe;
     private final IFocusGroup focuses;
 
-    public MillRecipeSetSlotEvent(IRecipeLayoutBuilder builder, IMillRecipe recipe, IFocusGroup focuses) {
+    public MillRecipeSetSlotEvent(IRecipeLayoutBuilder builder, IMillCraftingRecipe recipe, IFocusGroup focuses) {
         this.builder = builder;
         this.recipe = recipe;
         this.focuses = focuses;
@@ -25,7 +25,7 @@ public class MillRecipeSetSlotEvent extends Event {
         return builder;
     }
 
-    public IMillRecipe getRecipe() {
+    public IMillCraftingRecipe getRecipe() {
         return recipe;
     }
 

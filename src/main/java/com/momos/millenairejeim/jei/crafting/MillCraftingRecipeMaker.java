@@ -1,7 +1,7 @@
 package com.momos.millenairejeim.jei.crafting;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.util.MMLog;
 import net.minecraft.resources.ResourceLocation;
 import org.millenaire.culture.VillagerType;
@@ -24,18 +24,18 @@ import java.util.Set;
  */
 public class MillCraftingRecipeMaker {
     /** 提取【村民手工与合成】分类配方列表，对接 JEI 的 Crafting Category。*/
-    public static List<IMillRecipe> getCraftingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.CraftTypeSet);}
+    public static List<IMillCraftingRecipe> getCraftingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.CraftTypeSet);}
     /** 提取【农林采掘与生产】分类配方列表，对接 JEI 的 Farming/Mining Category。*/
-    public static List<IMillRecipe> getLootTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.LootTypeSet);}
+    public static List<IMillCraftingRecipe> getLootTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.LootTypeSet);}
     /** 提取【农林收割与采摘】分类配方列表 */
-    public static List<IMillRecipe> getHarvestTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.HarvestTypeSet);}
+    public static List<IMillCraftingRecipe> getHarvestTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.HarvestTypeSet);}
     /** 提取【实体交互与牧业】分类配方列表 */
-    public static List<IMillRecipe> getOfEntityTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.OfEntityTypeSet);}
+    public static List<IMillCraftingRecipe> getOfEntityTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.OfEntityTypeSet);}
 
     /** 初始化获得条目 */
-    public static List<IMillRecipe> initRecipes(GoalRegistry activeRegistry) {
+    public static List<IMillCraftingRecipe> initRecipes(GoalRegistry activeRegistry) {
         // [新注释] 合并提取手工、冶炼、采掘以及农林收割等全部单页签配方
-        List<IMillRecipe> recipes = new ArrayList<>();
+        List<IMillCraftingRecipe> recipes = new ArrayList<>();
         recipes.addAll(getCraftingRecipes(activeRegistry));
         recipes.addAll(getLootTypeSetRecipes(activeRegistry));
         recipes.addAll(getHarvestTypeSetRecipes(activeRegistry));
@@ -48,9 +48,9 @@ public class MillCraftingRecipeMaker {
      * 根据指定的 Handler ID 提取对应配方列表。
      * @param activeRegistry 激活的 {@link GoalRegistry} 实例
      * @param targetHandlerId 目标 handler 标识，例如 "crafting" 或 "smelting"
-     * @return 解析后的 {@link IMillRecipe} 列表
+     * @return 解析后的 {@link IMillCraftingRecipe} 列表
      */
-    public static List<IMillRecipe> getRecipesByHandler(GoalRegistry activeRegistry, String targetHandlerId) {
+    public static List<IMillCraftingRecipe> getRecipesByHandler(GoalRegistry activeRegistry, String targetHandlerId) {
         if (targetHandlerId == null || targetHandlerId.isBlank()) {
             return List.of();
         }
@@ -65,10 +65,10 @@ public class MillCraftingRecipeMaker {
      *
      * @param activeRegistry 激活的 {@link GoalRegistry} 实例
      * @param targetHandlerIds 目标 handler 标识集合 {@link Set}
-     * @return 解析后的 {@link IMillRecipe} 列表
+     * @return 解析后的 {@link IMillCraftingRecipe} 列表
      */
-    public static List<IMillRecipe> getRecipesByHandlers(GoalRegistry activeRegistry, Set<String> targetHandlerIds) {
-        List<IMillRecipe> recipes = new ArrayList<>();
+    public static List<IMillCraftingRecipe> getRecipesByHandlers(GoalRegistry activeRegistry, Set<String> targetHandlerIds) {
+        List<IMillCraftingRecipe> recipes = new ArrayList<>();
         if (activeRegistry == null) {
             // [新注释] 使用 MMLog.warn 输出三语警告日志
             // [醒目新注释] 追加 targetHandlerIds 参数，便于定位目标集合为空时引发注册中断的上下文
@@ -125,7 +125,7 @@ public class MillCraftingRecipeMaker {
                      * 调用重构后的静态工厂 {@link MillCraftingRecipe#parse(GatheringType, List)}，
                      * 直接获取解析完成的 {@link IMillRecipe} 子类实体（如 {@link StandardCraftingRecipe}）。
                      * ========================================================================================= */
-                    IMillRecipe recipe = MillCraftingRecipe.parse(type, matchedVillagers);
+                    IMillCraftingRecipe recipe = MillCraftingRecipe.parse(type, matchedVillagers);
                     if (recipe != null) {
                         recipes.add(recipe);
                         parsedCount++;
