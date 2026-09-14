@@ -1,4 +1,4 @@
-package com.momos.millenairejeim.jei.crafting.event;
+package com.momos.millenairejeim.event;
 
 import net.neoforged.bus.api.Event;
 

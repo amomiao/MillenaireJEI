@@ -1,4 +1,4 @@
-package com.momos.millenairejeim.jei.crafting.event;
+package com.momos.millenairejeim.event;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.recipe.IFocusGroup;

@@ -1,5 +1,11 @@
+// region MillTradeCategory 全量代码实现
 package com.momos.millenairejeim.jei.Trade;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import com.momos.millenairejeim.event.MillRecipeButtonClickEvent;
+import com.momos.millenairejeim.event.MillRecipeButtonRenderEvent;
+import com.momos.millenairejeim.event.MillRecipeSetSlotEvent;
+import com.momos.millenairejeim.gui.MillPlusButtonWidget;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeimKeys;
@@ -8,6 +14,8 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.inputs.IJeiInputHandler;
+import mezz.jei.api.gui.inputs.IJeiUserInput;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -17,20 +25,35 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
+    /* =========================================================================================
+     * [醒目新注释] 交易加号按钮 ID 标识与绘制位置定义
+     * 对应水平位置在右侧 (X=142)，垂直位置 (Y=13) 与第二行建筑文本 (Y=15) 同高对齐。
+     * ========================================================================================= */
+    public static final String BUTTON_ID_BUILDING_DETAIL = "trade_building_detail_plus";
+    private static final int BUILDING_BUTTON_X = 142;
+    private static final int BUILDING_BUTTON_Y = 5;
+
     private final RecipeType<MillTradeRecipe> recipeType;
     private final Component title;
     private final IDrawable background;
     private final IDrawable icon;
     private final boolean isSellingCategory;
+
+    /* =========================================================================================
+     * [醒目新注释] 实例化控件：交易关联建筑右侧的加号按钮实例
+     * ========================================================================================= */
+    private final MillPlusButtonWidget buildingPlusButton = new MillPlusButtonWidget(12, 12);
 
     public MillTradeCategory(IGuiHelper guiHelper, RecipeType<MillTradeRecipe> recipeType, Component title, IDrawable icon, boolean isSellingCategory) {
         this.recipeType = recipeType;
@@ -87,6 +110,11 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
                         .addItemStack(recipe.getCoinStacks().get(i));
             }
         }
+
+        /* =========================================================================================
+         * [醒目新注释] 事件发布：发布交易配方槽位绑定事件，供后置子模组插入建筑要素轮播槽位
+         * ========================================================================================= */
+        NeoForge.EVENT_BUS.post(new MillRecipeSetSlotEvent<>(builder, recipe, focuses));
     }
 
     @Override
@@ -130,6 +158,17 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
             );
             guiGraphics.drawString(font, repInfo, 5, 48, 0xAA0000, false);
         }
+
+        /* =========================================================================================
+         * [醒目新注释] 事件1应用：询问是否绘制【交易关联建筑详情查看 (+) 按钮】
+         * ========================================================================================= */
+        boolean defaultBuildingRender = buildingKeys != null && !buildingKeys.isEmpty();
+        MillRecipeButtonRenderEvent<MillTradeRecipe> buildingRenderEvent = new MillRecipeButtonRenderEvent<>(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        buildingRenderEvent.setShouldRender(false);
+        NeoForge.EVENT_BUS.post(buildingRenderEvent);
+        if (buildingRenderEvent.isShouldRender()) {
+            buildingPlusButton.render(guiGraphics, font, BUILDING_BUTTON_X, BUILDING_BUTTON_Y, mouseX, mouseY);
+        }
     }
 
     @Override
@@ -153,15 +192,6 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         }
     }
 
-    /**
-     * [新注释] 构建交易界面顶部的商店/建筑摘要。
-     * 自动检测是否存在译名重名，无重名时直接显示名称，不再拼接括号后缀。
-     *
-     * @param cultureId    文化 {@link ResourceLocation}
-     * @param shopId       商店 ID
-     * @param buildingKeys 关联的建筑 Key 集合
-     * @return 格式化的摘要组件 {@link Component}
-     */
     /**
      * [新注释] 重构：取消文化名称前缀拼装，仅构建第二行（建筑名称 + 消歧义ID + 额外地点计数）。
      */
@@ -202,8 +232,38 @@ public class MillTradeCategory implements IRecipeCategory<MillTradeRecipe> {
         return summary;
     }
 
+    /**
+     * [醒目新注释] JEI 19.x+ 声明式输入处理器挂载方法。
+     * 为交易建筑详情加号按钮挂载 {@link IJeiInputHandler}。
+     */
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, MillTradeRecipe recipe, IFocusGroup focuses) {
         builder.addRecipeArrow().setPosition(68, 26);
+
+        // [醒目新注释] 交易关联建筑加号按钮交互响应挂载
+        Set<String> buildingKeys = MillenaireAPIHelper.getBuildingKeysByShopId(recipe.getCultureId(), recipe.getShopId());
+        boolean defaultBuildingRender = buildingKeys != null && !buildingKeys.isEmpty();
+        MillRecipeButtonRenderEvent<MillTradeRecipe> buildingRenderEvent = new MillRecipeButtonRenderEvent<>(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        NeoForge.EVENT_BUS.post(buildingRenderEvent);
+
+        if (buildingRenderEvent.isShouldRender()) {
+            builder.addInputHandler(new IJeiInputHandler() {
+                @Override
+                public ScreenRectangle getArea() {
+                    return new ScreenRectangle(BUILDING_BUTTON_X, BUILDING_BUTTON_Y, buildingPlusButton.getWidth(), buildingPlusButton.getHeight());
+                }
+
+                @Override
+                public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
+                    InputConstants.Key key = input.getKey();
+                    if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) { // 0 代表鼠标左键
+                        NeoForge.EVENT_BUS.post(new MillRecipeButtonClickEvent<>(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0));
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
     }
 }
+// endregion MillTradeCategory 全量代码实现
