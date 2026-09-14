@@ -132,9 +132,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe
                         return copy;
                     })
                     .toArray(ItemStack[]::new);
-
-            builder.addSlot(RecipeIngredientRole.INPUT, x + 1, y + 1)
-                    .addIngredients(VanillaTypes.ITEM_STACK, Arrays.asList(displayStacks));
+            builder.addSlot(RecipeIngredientRole.INPUT, x + 1, y + 1).addIngredients(VanillaTypes.ITEM_STACK, Arrays.asList(displayStacks));
         }
 
         List<ItemStack> outputs = recipe.getOutputs();
@@ -154,7 +152,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe
             }
         }
 
-        NeoForge.EVENT_BUS.post(new MillRecipeSetSlotEvent(builder, recipe, focuses));
+        NeoForge.EVENT_BUS.post(new MillRecipeSetSlotEvent<>(builder, recipe, focuses));
     }
 
     @Override
@@ -256,7 +254,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe
          * [醒目新注释] 事件1应用：询问是否绘制【村民详情查看 (+) 按钮】
          * ========================================================================================= */
         boolean defaultVillagerRender = villagers != null && !villagers.isEmpty();
-        MillRecipeButtonRenderEvent villagerRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
+        MillRecipeButtonRenderEvent<IMillCraftingRecipe> villagerRenderEvent = new MillRecipeButtonRenderEvent<>(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
         villagerRenderEvent.setShouldRender(false);
         NeoForge.EVENT_BUS.post(villagerRenderEvent);
         if (villagerRenderEvent.isShouldRender()) {
@@ -267,7 +265,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe
          * [醒目新注释] 事件1应用：询问是否绘制【建筑详情查看 (+) 按钮】
          * ========================================================================================= */
         boolean defaultBuildingRender = buildings != null && !buildings.isEmpty();
-        MillRecipeButtonRenderEvent buildingRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        MillRecipeButtonRenderEvent<IMillCraftingRecipe> buildingRenderEvent = new MillRecipeButtonRenderEvent<>(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
         buildingRenderEvent.setShouldRender(false);
         NeoForge.EVENT_BUS.post(buildingRenderEvent);
         if (buildingRenderEvent.isShouldRender()) {
@@ -287,7 +285,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe
     public void createRecipeExtras(IRecipeExtrasBuilder builder, IMillCraftingRecipe recipe, IFocusGroup focuses) {
         // 1. 村民加号按钮交互响应挂载
         boolean defaultVillagerRender = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty();
-        MillRecipeButtonRenderEvent villagerRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
+        MillRecipeButtonRenderEvent<IMillCraftingRecipe> villagerRenderEvent = new MillRecipeButtonRenderEvent<>(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
         NeoForge.EVENT_BUS.post(villagerRenderEvent);
 
         if (villagerRenderEvent.isShouldRender()) {
@@ -311,7 +309,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe
 
         // 2. [醒目新注释] 建筑加号按钮交互响应挂载
         boolean defaultBuildingRender = recipe.getAssociatedBuildingIds() != null && !recipe.getAssociatedBuildingIds().isEmpty();
-        MillRecipeButtonRenderEvent buildingRenderEvent = new MillRecipeButtonRenderEvent(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        MillRecipeButtonRenderEvent<IMillCraftingRecipe> buildingRenderEvent = new MillRecipeButtonRenderEvent<>(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
         NeoForge.EVENT_BUS.post(buildingRenderEvent);
 
         if (buildingRenderEvent.isShouldRender()) {
@@ -325,7 +323,7 @@ public class MillCraftingCategory implements IRecipeCategory<IMillCraftingRecipe
                 public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                     InputConstants.Key key = input.getKey();
                     if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) { // 0 代表鼠标左键
-                        NeoForge.EVENT_BUS.post(new MillRecipeButtonClickEvent(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0));
+                        NeoForge.EVENT_BUS.post(new MillRecipeButtonClickEvent<>(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0));
                         return true;
                     }
                     return false;
