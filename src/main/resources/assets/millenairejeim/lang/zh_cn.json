@@ -15,14 +15,14 @@
   "jei.millenaire.paint.painted_brick_walls": "刷漆砖墙",
 
   "jei.millenaire.crafting_type.crafting": "合成",
-  "jei.millenaire.crafting_type.smelting": "冶炼/烹饪",
-  "jei.millenaire.crafting_type.mining": "采矿/挖掘",
-  "jei.millenaire.crafting_type.fishing": "捕鱼/钓鱼",
+  "jei.millenaire.crafting_type.smelting": "熔炉",
+  "jei.millenaire.crafting_type.mining": "采掘",
+  "jei.millenaire.crafting_type.fishing": "钓鱼",
   "jei.millenaire.crafting_type.fishing_inuit": "因纽特捕鱼",
   "jei.millenaire.crafting_type.harvesting": "农作收割",
   "jei.millenaire.crafting_type.fruit_harvesting": "果树采摘",
   "jei.millenaire.crafting_type.cocoa_harvesting": "可可采摘",
-  "jei.millenaire.crafting_type.slaughter": "畜牧/屠宰",
+  "jei.millenaire.crafting_type.slaughter": "养殖",
   "jei.millenaire.crafting_type.breeding": "动物繁殖",
   "jei.millenaire.crafting_type.shearing": "动物剪毛",
 
@@ -39,7 +39,7 @@
   "jei.millenaire.crafting.none_building": "无建筑",
   "jei.millenaire.crafting.count_people": "(+%d)",
   "jei.millenaire.crafting.count_places": "(+%d)",
-  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l【制作村民】",
-  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l【制作建筑】",
+  "jei.millenaire.crafting.tooltip.villagers_header": "§2§l[制作村民]",
+  "jei.millenaire.crafting.tooltip.buildings_header": "§3§l[制作建筑]",
   "jei.millenaire.crafting.tooltip.item_entry": "§7• %s"
 }

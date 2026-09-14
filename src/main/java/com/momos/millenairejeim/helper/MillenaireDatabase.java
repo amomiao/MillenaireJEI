@@ -17,9 +17,10 @@ import java.util.*;
  * 解决高频 JEI 检索与 UI 交互时的重复计算性能损耗。
  */
 public final class MillenaireDatabase {
-
     private static volatile MillenaireDatabase instance = null;
-
+    // m数据
+    private final Map<ResourceLocation, BuildingPlanSet> planToBuildingSetMap;
+    // mm数据
     // 预索引关系映射表缓存
     private final Map<ResourceLocation, List<VillageType>> cultureToVillagesMap;
     private final Map<ResourceLocation, List<BuildingPlanSet>> villageToBuildingsMap;
@@ -48,6 +49,21 @@ public final class MillenaireDatabase {
         Collection<BuildingPlanSet> allBuildings = MillenaireAPIHelper.getAllBuildings();
         Collection<VillagerType> allVillagers = MillenaireAPIHelper.getAllVillagers();
 
+        // m
+        Map<ResourceLocation, BuildingPlanSet> p2bSet = new HashMap<>();
+        for (BuildingPlanSet planSet : allBuildings) {
+            if (planSet == null || planSet.variants() == null) continue;
+            for (List<BuildingPlanSet.LevelDef> levels : planSet.variants().values()) {
+                if (levels == null) continue;
+                for (BuildingPlanSet.LevelDef levelDef : levels) {
+                    if (levelDef != null && levelDef.planId() != null) {
+                        p2bSet.put(levelDef.planId(), planSet);
+                    }
+                }
+            }
+        }
+
+        // mm
         // 2. 建立 [文化 -> 村庄] 映射
         for (Culture culture : allCultures) {
             if (culture == null || culture.id() == null) continue;
@@ -128,6 +144,8 @@ public final class MillenaireDatabase {
         }
 
         // 赋值只读缓存
+        this.planToBuildingSetMap = Collections.unmodifiableMap(p2bSet);
+        // mm
         this.cultureToVillagesMap = Collections.unmodifiableMap(c2v);
         this.villageToBuildingsMap = Collections.unmodifiableMap(v2b);
         this.villageToVillagersMap = Collections.unmodifiableMap(v2v);
@@ -165,6 +183,10 @@ public final class MillenaireDatabase {
     }
 
     // region Getter 关系查询 API
+    public BuildingPlanSet getBuildingSetByPlanId(ResourceLocation planId) {
+        return planId == null ? null : planToBuildingSetMap.get(planId);
+    }
+    // mm
     public List<VillageType> getVillagesByCulture(ResourceLocation cultureId) {
         return cultureId == null ? List.of() : cultureToVillagesMap.getOrDefault(cultureId, List.of());
     }

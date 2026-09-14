@@ -30,7 +30,7 @@ import java.util.function.Function;
  * 集中管理对千年前后端核心 API 的调用，并作为 {@link MillenaireDatabase} 的门面类对外提供高频查询。
  */
 public final class MillenaireAPIHelper {
-
+    private static Map<ResourceLocation, BuildingPlanSet> PLAN_TO_SET_CACHE = null;
     private MillenaireAPIHelper() {}
 
     /** 清空本地静态缓存（建议在重载数据包或离开世界时调用）*/
@@ -127,6 +127,13 @@ public final class MillenaireAPIHelper {
     public static Map<String, ShopProfile> getShopProfiles(ResourceLocation cultureId) { return cultureId == null ? Collections.emptyMap() : ShopProfileLoader.getProfiles(cultureId); }
     public static TradeGood getTradeGood(ResourceLocation cultureId, String goodId) { return cultureId == null || goodId == null ? null : TradeGoodsLoader.getGoodById(cultureId, goodId); }
     public static Item resolveTradeGoodItem(TradeGood good) { return good == null ? null : good.resolveItem(); }
+    public static BuildingPlanSet getBuildingPlanSetByPlan(BuildingPlan plan) {
+        if (plan == null || plan.id() == null) {
+            return null;
+        }
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getBuildingSetByPlanId(plan.id()) : null;
+    }
 
     // region 物品与货币系统 API
     public static Item resolveItem(String itemId) { return ItemHelper.resolve(itemId); }
@@ -252,8 +259,8 @@ public final class MillenaireAPIHelper {
     // endregion 文化与建筑村民关联过滤底层工具与门面 API
 
     // region 交易 API
-    public static Set<String> getBuildingKeysByShopId(ResourceLocation cultureId, String shopId) {
-        Set<String> matchedBuildingKeys = new HashSet<>();
+    public static Set<BuildingPlan> getBuildingsByShopId(ResourceLocation cultureId, String shopId){
+        Set<BuildingPlan> matchedBuildingKeys = new HashSet<>();
         if (cultureId == null || shopId == null) {
             return matchedBuildingKeys;
         }
@@ -261,23 +268,35 @@ public final class MillenaireAPIHelper {
         if (buildingMap != null) {
             for (BuildingPlan plan : buildingMap.values()) {
                 if (plan != null && shopId.equals(plan.shopId()) && cultureId.equals(plan.culture())) {
-                    String baseKey = extractBaseBuildingKey(plan.id());
-                    if (!baseKey.isEmpty()) {
-                        matchedBuildingKeys.add(baseKey);
-                    }
+                    matchedBuildingKeys.add(plan);
                 }
             }
         }
         return matchedBuildingKeys;
     }
 
-    public static String extractBaseBuildingKey(ResourceLocation planId) {
-        if (planId == null) return "";
-        String path = planId.getPath();
-        if (path.contains("/")) {
-            path = path.substring(path.lastIndexOf('/') + 1);
+    /**
+     * 根据文化 ID 和商店 ID 获取对应的建筑原名（Native Name）集合。
+     * @param cultureId 文化 ID {@link ResourceLocation}
+     * @param shopId    商店 ID {@link String}
+     * @return 匹配到的建筑原名集合 {@link Set}
+     */
+    public static Set<String> getBuildingKeysByShopId(ResourceLocation cultureId, String shopId) {
+        Set<String> matchedBuildingKeys = new HashSet<>();
+        if (cultureId == null || shopId == null) {
+            return matchedBuildingKeys;
         }
-        return path.replaceAll("(_[a-zA-Z])?(_\\d+)?$", "");
+        /* 遍历由 getBuildingsByShopId 筛选出的 BuildingPlan 集合并提取 baseKey */
+        // [醒目新注释] 原注释如上。现已移除 extractBaseBuildingKey 字符串截取，改为通过 MillenaireDatabase 反查 BuildingPlanSet 并直接获取 nativeName()
+        for (BuildingPlan plan : getBuildingsByShopId(cultureId, shopId)) {
+            if (plan != null) {
+                BuildingPlanSet planSet = getBuildingPlanSetByPlan(plan);
+                if (planSet != null && planSet.nativeName() != null) {
+                    matchedBuildingKeys.add(planSet.nativeName());
+                }
+            }
+        }
+        return matchedBuildingKeys;
     }
     // endregion 交易 API
 }
