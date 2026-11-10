@@ -178,15 +178,15 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
         guiGraphics.drawString(font, "§3" + buildingSummary, 12, 94, 0x404040, false);
 
         // 7. 触发事件询问是否绘制【村民详情查看 (+) 按钮】
-        boolean defaultVillagerRender = villagers != null && !villagers.isEmpty();
-        boolean shouldRenderVillager = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
+        // 预留给附属的控件：默认不渲染 (false)，仅当附属模组存在并明确置为 true 时才展示
+        boolean shouldRenderVillager = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, false);
         if (shouldRenderVillager) {
             villagerPlusButton.render(guiGraphics, font, VILLAGER_BUTTON_X, VILLAGER_BUTTON_Y, mouseX, mouseY);
         }
 
         // 8. 触发事件询问是否绘制【建筑详情查看 (+) 按钮】
-        boolean defaultBuildingRender = buildings != null && !buildings.isEmpty();
-        boolean shouldRenderBuilding = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        // 预留给附属的控件：默认不渲染 (false)，仅当附属模组存在并明确置为 true 时才展示
+        boolean shouldRenderBuilding = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
         if (shouldRenderBuilding) {
             buildingPlusButton.render(guiGraphics, font, BUILDING_BUTTON_X, BUILDING_BUTTON_Y, mouseX, mouseY);
         }
@@ -198,9 +198,8 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
         ICraftingLayoutView view = CraftingViewRegistry.getView(recipe);
         view.createRecipeExtras(builder, recipe, focuses);
 
-        // 2. 村民加号按钮交互响应挂载
-        boolean defaultVillagerRender = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty();
-        boolean shouldRenderVillager = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, defaultVillagerRender);
+        // 2. 村民加号按钮交互响应挂载（预留给附属：默认不挂载，仅当附属存在并准许时挂载）
+        boolean shouldRenderVillager = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, false);
 
         if (shouldRenderVillager) {
             builder.addInputHandler(new IJeiInputHandler() {
@@ -224,9 +223,8 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
             });
         }
 
-        // 3. 建筑加号按钮交互响应挂载
-        boolean defaultBuildingRender = recipe.getAssociatedBuildingIds() != null && !recipe.getAssociatedBuildingIds().isEmpty();
-        boolean shouldRenderBuilding = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        // 3. 建筑加号按钮交互响应挂载（预留给附属：默认不挂载，仅当附属存在并准许时挂载）
+        boolean shouldRenderBuilding = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
 
         if (shouldRenderBuilding) {
             builder.addInputHandler(new IJeiInputHandler() {

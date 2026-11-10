@@ -122,9 +122,8 @@ public class MillTradeCategory extends AbstractRecipeCategory<MillTradeRecipe> {
             guiGraphics.drawString(font, repInfo, 5, 48, 0xAA0000, false);
         }
 
-        // 建筑详情按钮触发绘制
-        boolean defaultBuildingRender = planSets != null && !planSets.isEmpty();
-        boolean shouldRender = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        // 建筑详情按钮触发绘制（预留给附属：默认不渲染，仅当附属模组存在且明确准许时才绘制）
+        boolean shouldRender = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
         if (shouldRender) {
             buildingPlusButton.render(guiGraphics, font, BUILDING_BUTTON_X, BUILDING_BUTTON_Y, mouseX, mouseY);
         }
@@ -181,9 +180,8 @@ public class MillTradeCategory extends AbstractRecipeCategory<MillTradeRecipe> {
     public void createRecipeExtras(IRecipeExtrasBuilder builder, MillTradeRecipe recipe, IFocusGroup focuses) {
         builder.addRecipeArrow().setPosition(68, 26);
 
-        List<BuildingPlanSet> planSets = MillenaireAPIHelper.getBuildingPlanSetsByShopId(recipe.getCultureId(), recipe.getShopId());
-        boolean defaultBuildingRender = planSets != null && !planSets.isEmpty();
-        boolean shouldRender = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, defaultBuildingRender);
+        // 建筑加号按钮交互响应挂载（预留给附属：默认不挂载，仅当附属模组存在且明确准许时才挂载）
+        boolean shouldRender = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
 
         if (shouldRender) {
             builder.addInputHandler(new IJeiInputHandler() {
