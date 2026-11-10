@@ -286,17 +286,34 @@ public final class MillenaireAPIHelper {
         if (cultureId == null || shopId == null) {
             return matchedBuildingKeys;
         }
-        /* 遍历由 getBuildingsByShopId 筛选出的 BuildingPlan 集合并提取 baseKey */
-        // [醒目新注释] 原注释如上。现已移除 extractBaseBuildingKey 字符串截取，改为通过 MillenaireDatabase 反查 BuildingPlanSet 并直接获取 nativeName()
         for (BuildingPlan plan : getBuildingsByShopId(cultureId, shopId)) {
             if (plan != null) {
                 BuildingPlanSet planSet = getBuildingPlanSetByPlan(plan);
-                if (planSet != null && planSet.nativeName() != null) {
-                    matchedBuildingKeys.add(planSet.nativeName());
+                if (planSet != null && planSet.buildingId() != null) {
+                    matchedBuildingKeys.add(planSet.buildingId());
                 }
             }
         }
         return matchedBuildingKeys;
+    }
+
+    /**
+     * 根据文化 ID 和商店 ID 获取对应的建筑 PlanSet 集合列表。
+     */
+    public static List<BuildingPlanSet> getBuildingPlanSetsByShopId(ResourceLocation cultureId, String shopId) {
+        List<BuildingPlanSet> matchedPlanSets = new ArrayList<>();
+        if (cultureId == null || shopId == null) {
+            return matchedPlanSets;
+        }
+        for (BuildingPlan plan : getBuildingsByShopId(cultureId, shopId)) {
+            if (plan != null) {
+                BuildingPlanSet planSet = getBuildingPlanSetByPlan(plan);
+                if (planSet != null && !matchedPlanSets.contains(planSet)) {
+                    matchedPlanSets.add(planSet);
+                }
+            }
+        }
+        return matchedPlanSets;
     }
     // endregion 交易 API
 }
