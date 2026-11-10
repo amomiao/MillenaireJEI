@@ -37,7 +37,7 @@ import java.util.Set;
 public class MillTradeCategory extends AbstractRecipeCategory<MillTradeRecipe> {
     public static final String BUTTON_ID_BUILDING_DETAIL = "trade_building_detail_plus";
     private static final int BUILDING_BUTTON_X = 142;
-    private static final int BUILDING_BUTTON_Y = 5;
+    private static final int BUILDING_BUTTON_Y = 45;
 
     private final RecipeType<MillTradeRecipe> recipeType;
     private final Component title;
@@ -196,8 +196,10 @@ public class MillTradeCategory extends AbstractRecipeCategory<MillTradeRecipe> {
                 public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                     InputConstants.Key key = input.getKey();
                     if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) { // 0 代表鼠标左键
-                        buildingPlusButton.onClick();
-                        PlatformBridge.get().postRecipeButtonClick(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0);
+                        if (!input.isSimulate()) {
+                            buildingPlusButton.onClick();
+                            PlatformBridge.get().postRecipeButtonClick(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0);
+                        }
                         return true;
                     }
                     return false;

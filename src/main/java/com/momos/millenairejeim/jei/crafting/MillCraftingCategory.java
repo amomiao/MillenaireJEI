@@ -213,8 +213,10 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
                 public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                     InputConstants.Key key = input.getKey();
                     if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) { // 0 代表鼠标左键
-                        villagerPlusButton.onClick();
-                        PlatformBridge.get().postRecipeButtonClick(recipe, BUTTON_ID_VILLAGER_DETAIL, mouseX, mouseY, 0);
+                        if (!input.isSimulate()) {
+                            villagerPlusButton.onClick();
+                            PlatformBridge.get().postRecipeButtonClick(recipe, BUTTON_ID_VILLAGER_DETAIL, mouseX, mouseY, 0);
+                        }
                         return true;
                     }
                     return false;
@@ -237,8 +239,10 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
                 public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                     InputConstants.Key key = input.getKey();
                     if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) { // 0 代表鼠标左键
-                        buildingPlusButton.onClick();
-                        PlatformBridge.get().postRecipeButtonClick(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0);
+                        if (!input.isSimulate()) {
+                            buildingPlusButton.onClick();
+                            PlatformBridge.get().postRecipeButtonClick(recipe, BUTTON_ID_BUILDING_DETAIL, mouseX, mouseY, 0);
+                        }
                         return true;
                     }
                     return false;
