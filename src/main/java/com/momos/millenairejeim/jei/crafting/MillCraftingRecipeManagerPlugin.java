@@ -3,6 +3,7 @@ package com.momos.millenairejeim.jei.crafting;
 import com.momos.millenairejeim.jei.MillenaireJeimPlugin;
 import com.momos.millenairejeim.jei.crafting.type.GoalCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.AbstractMillCraftingType;
+import com.momos.millenairejeim.jei.crafting.type.GoalHarvestRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import mezz.jei.api.constants.VanillaTypes;
@@ -38,7 +39,12 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
     public static final Set<String> HarvestTypeSet = Set.of(
             "harvesting",
             "fruit_harvesting",
-            "cocoa_harvesting"
+            "cocoa_harvesting",
+            "paddy_harvesting"
+    );
+    /** 3b.伐木与采叶行为 */
+    public static final Set<String> ChoppingTypeSet = Set.of(
+            "chopping"
     );
     /** 4.与实体的各种行为 */
     public static final Set<String> OfEntityTypeSet =Set.of(
@@ -117,14 +123,24 @@ public class MillCraftingRecipeManagerPlugin implements IRecipeManagerPlugin {
             return recipe.getInputs().stream()
                     .anyMatch(input -> input.ingredient().test(focusStack));
         }
+        if (role == RecipeIngredientRole.CATALYST) {
+            return recipe.getCatalysts().stream()
+                    .anyMatch(catalyst -> ItemStack.isSameItemSameComponents(catalyst, focusStack));
+        }
         if (role == RecipeIngredientRole.OUTPUT) {
             return recipe.getOutputs().stream()
-                    .anyMatch(output -> ItemStack.isSameItemSameComponents(output, focusStack));
+                    .anyMatch(output -> ItemStack.isSameItemSameComponents(output, focusStack))
+                    || (recipe instanceof GoalHarvestRecipe harvest && harvest.hasIrrigationBonus()
+                    && ItemStack.isSameItemSameComponents(harvest.getIrrigationBonusCrop(), focusStack));
         }
         boolean matchInput = recipe.getInputs().stream()
                 .anyMatch(input -> input.ingredient().test(focusStack));
         boolean matchOutput = recipe.getOutputs().stream()
-                .anyMatch(output -> ItemStack.isSameItemSameComponents(output, focusStack));
-        return matchInput || matchOutput;
+                .anyMatch(output -> ItemStack.isSameItemSameComponents(output, focusStack))
+                || (recipe instanceof GoalHarvestRecipe harvest && harvest.hasIrrigationBonus()
+                && ItemStack.isSameItemSameComponents(harvest.getIrrigationBonusCrop(), focusStack));
+        boolean matchCatalyst = recipe.getCatalysts().stream()
+                .anyMatch(catalyst -> ItemStack.isSameItemSameComponents(catalyst, focusStack));
+        return matchInput || matchCatalyst || matchOutput;
     }
 }

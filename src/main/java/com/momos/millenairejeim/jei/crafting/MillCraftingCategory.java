@@ -8,6 +8,7 @@ import com.momos.millenairejeim.gui.MillPlusButtonWidget;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import com.momos.millenairejeim.jei.crafting.view.CraftingViewRegistry;
 import com.momos.millenairejeim.jei.crafting.view.ICraftingLayoutView;
 import com.momos.millenairejeim.util.MillenaireJeimLocalizeHelper;
@@ -112,7 +113,9 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
         // 3. 构建制作村民汇总文本
         List<VillagerType> villagers = recipe.getVillagerTypes();
         String villagerSummary;
-        if (villagers == null || villagers.isEmpty()) {
+        if (recipe instanceof MillCraftingBaseRecipe base && base.getCustomVillagerSummary() != null) {
+            villagerSummary = base.getCustomVillagerSummary().getString();
+        } else if (villagers == null || villagers.isEmpty()) {
             villagerSummary = Component.translatableWithFallback(
                     MillenaireJeimKeys.KEY_NONE_VILLAGER,
                     MillenaireJeimKeys.FALLBACK_NONE_VILLAGER
@@ -134,7 +137,9 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
         // 4. 构建关联建筑汇总文本
         List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
         String buildingSummary;
-        if (buildings == null || buildings.isEmpty()) {
+        if (recipe instanceof MillCraftingBaseRecipe base && base.getCustomBuildingSummary() != null) {
+            buildingSummary = base.getCustomBuildingSummary().getString();
+        } else if (buildings == null || buildings.isEmpty()) {
             buildingSummary = Component.translatableWithFallback(
                     MillenaireJeimKeys.KEY_NONE_BUILDING,
                     MillenaireJeimKeys.FALLBACK_NONE_BUILDING
@@ -179,14 +184,16 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
 
         // 7. 触发事件询问是否绘制【村民详情查看 (+) 按钮】
         // 预留给附属的控件：默认不渲染 (false)，仅当附属模组存在并明确置为 true 时才展示
-        boolean shouldRenderVillager = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, false);
+        boolean shouldRenderVillager = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty()
+                && PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, false);
         if (shouldRenderVillager) {
             villagerPlusButton.render(guiGraphics, font, VILLAGER_BUTTON_X, VILLAGER_BUTTON_Y, mouseX, mouseY);
         }
 
         // 8. 触发事件询问是否绘制【建筑详情查看 (+) 按钮】
         // 预留给附属的控件：默认不渲染 (false)，仅当附属模组存在并明确置为 true 时才展示
-        boolean shouldRenderBuilding = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
+        boolean shouldRenderBuilding = recipe.getAssociatedBuildingIds() != null && !recipe.getAssociatedBuildingIds().isEmpty()
+                && PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
         if (shouldRenderBuilding) {
             buildingPlusButton.render(guiGraphics, font, BUILDING_BUTTON_X, BUILDING_BUTTON_Y, mouseX, mouseY);
         }
@@ -199,7 +206,8 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
         view.createRecipeExtras(builder, recipe, focuses);
 
         // 2. 村民加号按钮交互响应挂载（预留给附属：默认不挂载，仅当附属存在并准许时挂载）
-        boolean shouldRenderVillager = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, false);
+        boolean shouldRenderVillager = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty()
+                && PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_VILLAGER_DETAIL, false);
 
         if (shouldRenderVillager) {
             builder.addInputHandler(new IJeiInputHandler() {
@@ -224,7 +232,8 @@ public class MillCraftingCategory extends AbstractRecipeCategory<IMillCraftingRe
         }
 
         // 3. 建筑加号按钮交互响应挂载（预留给附属：默认不挂载，仅当附属存在并准许时挂载）
-        boolean shouldRenderBuilding = PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
+        boolean shouldRenderBuilding = recipe.getAssociatedBuildingIds() != null && !recipe.getAssociatedBuildingIds().isEmpty()
+                && PlatformBridge.get().postRecipeButtonRender(recipe, BUTTON_ID_BUILDING_DETAIL, false);
 
         if (shouldRenderBuilding) {
             builder.addInputHandler(new IJeiInputHandler() {

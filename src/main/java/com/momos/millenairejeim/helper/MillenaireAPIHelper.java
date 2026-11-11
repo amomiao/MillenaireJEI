@@ -37,6 +37,7 @@ public final class MillenaireAPIHelper {
     public static void clearCache() {
         // [醒目新注释] 重置底层 MillenaireDatabase 数据库映射单例
         MillenaireDatabase.clear();
+        SafeReflectionHelper.clearCache();
     }
 
     //Tag 基础标识与方法重载封装，自动规范小写路径并规避 Null 指针

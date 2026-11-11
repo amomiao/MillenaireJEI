@@ -158,7 +158,13 @@ public abstract class AbstractMillCraftingType {
         }
     }
 
-    private void addIngredientByString(String itemId, int count, List<IngredientWithCount> inputs) {
+    protected void addIngredientByString(String itemId, int count, List<IngredientWithCount> inputs) {
+        addItemOrTagInput(itemId, count, inputs);
+    }
+
+    public static void addItemOrTagInput(String itemId, int count, List<IngredientWithCount> inputs) {
+        if (itemId == null || itemId.isBlank() || inputs == null) return;
+        int safeCount = Math.max(1, count);
         if (itemId.startsWith(TAG_PREFIX)) {
             ResourceLocation tagId = ResourceLocation.tryParse(itemId.substring(TAG_PREFIX.length()));
             if (tagId != null) {
@@ -170,13 +176,13 @@ public abstract class AbstractMillCraftingType {
                 }
                 if (!tagStacks.isEmpty()) {
                     Ingredient ingredient = Ingredient.of(tagStacks.stream());
-                    inputs.add(new IngredientWithCount(ingredient, count));
+                    inputs.add(new IngredientWithCount(ingredient, safeCount));
                 }
             }
         } else {
             Item item = ItemHelper.resolve(itemId);
             if (item != null && item != Items.AIR) {
-                inputs.add(new IngredientWithCount(Ingredient.of(item), count));
+                inputs.add(new IngredientWithCount(Ingredient.of(item), safeCount));
             }
         }
     }

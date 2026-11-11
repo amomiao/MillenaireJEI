@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
     implementation "curse.maven:jei-238222:7391682" // compileOnly | runtimeOnly
-    compileOnly "curse.maven:millenaire-270871:8772286" // compileOnly | runtimeOnly
+    compileOnly files('libs/millenaire-9.1.0.jar')
 }
 
 sourceSets {

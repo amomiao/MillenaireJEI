@@ -8,7 +8,10 @@ import org.millenaire.culture.VillagerType;
 import org.millenaire.goal.GoalRegistry;
 import org.millenaire.goal.VillagerGoal;
 import org.millenaire.goal.gathering.GatheringGoal;
+import com.momos.millenairejeim.jei.crafting.type.GoalEntityInteractionRecipe;
+import com.momos.millenairejeim.jei.crafting.type.GoalSpotRecipe;
 import org.millenaire.goal.gathering.GatheringType;
+import org.millenaire.goal.impl.SpotGatheringGoal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +34,38 @@ public class MillCraftingRecipeMaker {
     public static List<IMillCraftingRecipe> getHarvestTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.HarvestTypeSet);}
     /** 提取【实体交互与牧业】分类配方列表 */
     public static List<IMillCraftingRecipe> getOfEntityTypeSetRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.OfEntityTypeSet);}
+    /** 提取【伐木与采叶】分类配方列表 */
+    public static List<IMillCraftingRecipe> getChoppingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.ChoppingTypeSet);}
+
+    /** 提取 Java 硬编码的 {@link SpotGatheringGoal} 定点采集/处理配方 */
+    public static List<IMillCraftingRecipe> getSpotGatheringRecipes(GoalRegistry activeRegistry) {
+        List<IMillCraftingRecipe> recipes = new ArrayList<>();
+        if (activeRegistry == null) {
+            return recipes;
+        }
+        Map<ResourceLocation, List<VillagerType>> goalToVillagers = buildGoalToVillagerMap();
+        List<ResourceLocation> goalIds = activeRegistry.getAllIds();
+        if (goalIds == null) {
+            return recipes;
+        }
+        for (ResourceLocation goalId : goalIds) {
+            if (goalId == null) continue;
+            VillagerGoal goal = activeRegistry.get(goalId);
+            if (goal instanceof SpotGatheringGoal spotGoal) {
+                List<VillagerType> matchedVillagers = goalToVillagers.getOrDefault(goalId, List.of());
+                GoalSpotRecipe recipe = GoalSpotRecipe.create(goalId, spotGoal, matchedVillagers);
+                if (recipe != null) {
+                    recipes.add(recipe);
+                }
+            }
+        }
+        return recipes;
+    }
+
+    /** 提取 {@code InuitHuntingDropHandler} 特殊狩猎掉落配方 */
+    public static List<IMillCraftingRecipe> getInuitHuntingRecipes() {
+        return GoalEntityInteractionRecipe.Parser.createInuitHuntingRecipes();
+    }
 
     /** 初始化获得条目 */
     public static List<IMillCraftingRecipe> initRecipes(GoalRegistry activeRegistry) {
@@ -40,6 +75,9 @@ public class MillCraftingRecipeMaker {
         recipes.addAll(getLootTypeSetRecipes(activeRegistry));
         recipes.addAll(getHarvestTypeSetRecipes(activeRegistry));
         recipes.addAll(getOfEntityTypeSetRecipes(activeRegistry));
+        recipes.addAll(getChoppingRecipes(activeRegistry));
+        recipes.addAll(getSpotGatheringRecipes(activeRegistry));
+        recipes.addAll(getInuitHuntingRecipes());
         return recipes;
     }
 
@@ -181,7 +219,7 @@ public class MillCraftingRecipeMaker {
      * 构建的目标 Goal / GatheringType ID 到对应村民类型列表的建立关系字典。
      * @return 映射字典 {@link Map}
      */
-    private static Map<ResourceLocation, List<VillagerType>> buildGoalToVillagerMap() {
+    public static Map<ResourceLocation, List<VillagerType>> buildGoalToVillagerMap() {
         Map<ResourceLocation, List<VillagerType>> map = new HashMap<>();
         Map<ResourceLocation, VillagerType> allVillagerType = MillenaireAPIHelper.getAllVillagerType();
 

@@ -1,5 +1,6 @@
 package com.momos.millenairejeim.jei.crafting;
 
+import com.momos.millenairejeim.jei.crafting.type.GoalChoppingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.GoalEntityInteractionRecipe;
 import com.momos.millenairejeim.jei.crafting.type.GoalHarvestRecipe;
 import com.momos.millenairejeim.jei.crafting.type.GoalLootRecipe;
@@ -24,6 +25,8 @@ public final class MillCraftingRecipe {
         registerParser(new GoalHarvestRecipe.Parser());
         // 注册实体交互与牧业配方解析器（适配 "slaughter", "breeding", "shearing" 等）
         registerParser(new GoalEntityInteractionRecipe.Parser());
+        // 注册伐木与采叶配方解析器（适配 "chopping"）
+        registerParser(new GoalChoppingRecipe.Parser());
     }
 
     private MillCraftingRecipe() {}

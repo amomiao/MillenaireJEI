@@ -138,5 +138,63 @@ public final class MillenaireJeimKeys {
     public static final String FALLBACK_CRAFTING_TYPE_SLAUGHTER = "Slaughter / Animal Husbandry";
     public static final String FALLBACK_CRAFTING_TYPE_BREEDING = "Animal Breeding";
     public static final String FALLBACK_CRAFTING_TYPE_SHEARING = "Animal Shearing";
+    public static final String FALLBACK_CRAFTING_TYPE_PADDY_HARVESTING = "Paddy Harvesting";
+    public static final String FALLBACK_CRAFTING_TYPE_CHOPPING = "Woodcutting / Chopping";
+    public static final String FALLBACK_CRAFTING_TYPE_SPOT_GATHERING = "Spot Gathering / Processing";
+    public static final String FALLBACK_CRAFTING_TYPE_INUIT_HUNTING = "Inuit Hunting Drop";
     public static final String FALLBACK_CRAFTING_TYPE_DEFAULT = "Villager Crafting";
+
+    /* ========================================================================= */
+    /* 7. 扩展掉落概率、条件说明与特殊 Goal 提示 Key                               */
+    /* ========================================================================= */
+    public static final String KEY_TOOLTIP_DROP_CHANCE = "jei.millenaire.crafting.tooltip.drop_chance";
+    public static final String FALLBACK_TOOLTIP_DROP_CHANCE = "§eDrop Chance: %d%%";
+
+    public static final String KEY_TOOLTIP_DROP_ROLLS = "jei.millenaire.crafting.tooltip.drop_rolls";
+    public static final String FALLBACK_TOOLTIP_DROP_ROLLS = "§eDrop Rolls: %s";
+
+    public static final String KEY_TOOLTIP_DROP_AMOUNT = "jei.millenaire.crafting.tooltip.drop_amount";
+    public static final String FALLBACK_TOOLTIP_DROP_AMOUNT = "§eDrop Amount: %s";
+
+    public static final String KEY_TOOLTIP_TOOL_NOT_CONSUMED = "jei.millenaire.crafting.tooltip.tool_not_consumed";
+    public static final String FALLBACK_TOOLTIP_TOOL_NOT_CONSUMED = "§7Tool required (not consumed)";
+
+    public static final String KEY_TOOLTIP_IRRIGATION_BONUS = "jei.millenaire.crafting.tooltip.irrigation_bonus";
+    public static final String FALLBACK_TOOLTIP_IRRIGATION_BONUS = "§b[Irrigation Bonus]";
+
+    public static final String KEY_INFO_RIPE_STAGE = "jei.millenaire.crafting.info.ripe_stage";
+    public static final String FALLBACK_INFO_RIPE_STAGE = "§7Ripe Stage: §e%d";
+
+    public static final String KEY_INFO_SPOT_SUN_DRY = "jei.millenaire.crafting.info.spot_sun_dry";
+    public static final String FALLBACK_INFO_SPOT_SUN_DRY = "§7Sunlight Drying";
+
+    public static final String KEY_TOOLTIP_SPOT_SUN_DRY = "jei.millenaire.crafting.tooltip.spot_sun_dry";
+    public static final String FALLBACK_TOOLTIP_SPOT_SUN_DRY = "§ePlaces Wet Brick; dries at light 15 into Mud Brick";
+
+    public static final String KEY_INFO_SPOT_PLANT = "jei.millenaire.crafting.info.spot_plant";
+    public static final String FALLBACK_INFO_SPOT_PLANT = "§7Plantation Planting";
+
+    public static final String KEY_TOOLTIP_SPOT_PLANT = "jei.millenaire.crafting.tooltip.spot_plant";
+    public static final String FALLBACK_TOOLTIP_SPOT_PLANT = "§ePlants Sugar Cane onto plantation soil";
+
+    public static final String KEY_TOOLTIP_SPOT_TOWNHALL_LIMIT = "jei.millenaire.crafting.tooltip.spot_townhall_limit";
+    public static final String FALLBACK_TOOLTIP_SPOT_TOWNHALL_LIMIT = "§7Townhall Stock Limit: %d";
+
+    public static final String KEY_INFO_HUNTING_KNOWLEDGE = "jei.millenaire.crafting.info.hunting_knowledge";
+    public static final String FALLBACK_INFO_HUNTING_KNOWLEDGE = "§7Requires: §e%s";
+
+    public static final String KEY_INFO_HUNTING_ANY_DEATH = "jei.millenaire.crafting.info.hunting_any_death";
+    public static final String FALLBACK_INFO_HUNTING_ANY_DEATH = "§7No knowledge required";
+
+    public static final String KEY_SUMMARY_PLAYER_KILL_LEARNED = "jei.millenaire.crafting.summary.player_kill_learned";
+    public static final String FALLBACK_SUMMARY_PLAYER_KILL_LEARNED = "Player Kill (Knowledge Required)";
+
+    public static final String KEY_SUMMARY_ANY_DEATH = "jei.millenaire.crafting.summary.any_death";
+    public static final String FALLBACK_SUMMARY_ANY_DEATH = "Any Entity Death";
+
+    public static final String KEY_SUMMARY_INUIT_HUNTING_WORLD = "jei.millenaire.crafting.summary.inuit_hunting_world";
+    public static final String FALLBACK_SUMMARY_INUIT_HUNTING_WORLD = "Inuit Hunting Drop";
+
+    public static final String KEY_TOOLTIP_SAPLING_CHANCE = "jei.millenaire.crafting.tooltip.sapling_chance";
+    public static final String FALLBACK_TOOLTIP_SAPLING_CHANCE = "§e%d%% chance per cut leaf (max 3 leaves)";
 }

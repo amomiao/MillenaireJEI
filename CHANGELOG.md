@@ -2,6 +2,36 @@
 
 ---
 
+## [v1.3.4] - 2026-11-11
+
+### 🧪 工艺页签运行时硬编码与 Handler 补全
+- **现有收割/捕鱼 Handler 补全**：
+  - `GoalHarvestRecipe` 新增 `harvestItems` 多项/多概率掉落数组解析（自动跳过 `chance <= 0` 的除草清理 Goal 防止误报，合并同种作物产出的多轮骰概率提示并展示在 Tooltip 中）；补全 `paddy_harvesting`（`millenaire:rice_paddy` 输入）与 `cocoa_harvesting`（`minecraft:cocoa_beans x2` 产出与 `+1` 灌溉奖励）解析。
+  - `GoalLootRecipe` 补全 `fishing_inuit` 无显式 `loot` 时的 `minecraft:cod` 保底产出与 `25%` 概率 `minecraft:bone_block` 附带 Tooltip。
+  - 新增 `GoalChoppingRecipe` 支持 `chopping`（伐木与采叶），输入 `#minecraft:axes`（带不消耗工具提示），输出在 JEI 中按原木（8 种）与树苗/红树胎生苗（8 种，含每叶 `25%` 最多 3 叶提示）分组轮播并支持全部原木与树苗的 `R` 聚焦检索。
+- **SpotGatheringGoal 运行时接入 (`GoalSpotRecipe`)**：
+  - 自动检索激活注册表中的 `SpotGatheringGoal`，支持蚕茧（`gather_silk`）、蜗牛紫染料（`gather_snails`）、泥砖收集（`gather_brick`）、湿砖日光晒干（`dry_brick`）、甘蔗收割与种植（`harvest_sugar_cane` / `plant_sugar_cane`），并结合建筑标签与执行村民映射关联建筑。
+- **InuitHuntingDropHandler 狩猎掉落接入**：
+  - 新增鱿鱼（10% `1x seafood_raw`）、守卫者（`2-3x seafood_raw`）、远古守卫者（`5-9x seafood_raw`）、狼（`0-2x wolfmeat_raw`）与北极熊（`1-2x bearmeat_raw`）的 JEI 展示及触发条件（玩家击杀+知识 / 任意死亡）与掉落区间 Tooltip，同步支持 `CATALYST` 刷怪蛋焦点检索。
+- **视图排版升级 (`HarvestLootLayoutView` / `EntityInteractionLayoutView` / `MillCraftingCategory`)**：
+  - 支持超过 2 个产物的多格网格排布（最多 6 格及溢出轮播）与自定义条件摘要渲染。
+
+### 🛡️ 安全反射防护 (`SafeReflectionHelper`)
+- 新增双模组共用安全反射工具 `SafeReflectionHelper`（捕获全量 `Throwable` 并按 `类名#成员` 去重输出 `MMLog.warn` 三语告警，同时返回安全降级默认值），并改造 `MillenaireAnomalyAnalyzer` 使用该工具消除静默吞异常风险。
+
+---
+
+## [v1.3.3] - 2026-11-11
+
+### 📦 依赖与工程维护
+- **前置编译依赖升级**：将 `build.gradle` 中编译期前置依赖由 CurseMaven 切换为本地 `libs/millenaire-9.1.0.jar`（保持 `neoforge.mods.toml` 中的适用版本范围不变）。
+
+### 🔍 异常诊断命令增强 (`/milljei export anomalies`)
+- **无源输入检查 (`UNREACHABLE_INPUT`)**：按文化维度及全局维度构建生产源索引（整合 `GatheringGoal`、隐式动物/捕鱼/砍树掉落、Java 硬编码 `SpotGatheringGoal` 及 `foreignMerchantStock` 行商库存），自动检出缺乏上游产出的合成/熔炼输入（如拜占庭 `cook_iron_ore` 所需的 `minecraft:raw_iron`）。
+- **产物语义不匹配检查 (`SEMANTIC_MISMATCH`)**：检出原料/`GoalKey`/`buildingLimit` 与最终产物存在材质或同族物品冲突的异常配方（如 `craft_clothes_silk` 消耗蚕丝却产出羊毛服饰 `clothes_byz_wool`）。
+
+---
+
 ## [v1.3.2] - 2026-11-10
 
 ### 🛡️ 附属联动控件存在性治理

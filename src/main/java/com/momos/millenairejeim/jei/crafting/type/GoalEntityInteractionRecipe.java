@@ -3,7 +3,9 @@ package com.momos.millenairejeim.jei.crafting.type;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
+import net.minecraft.network.chat.Component;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -274,7 +276,7 @@ public class GoalEntityInteractionRecipe extends MillCraftingBaseRecipe {
         }
 
         /** 根据实体注册名查找刷怪蛋 */
-        private static ItemStack resolveSpawnEgg(String entityIdStr) {
+        public static ItemStack resolveSpawnEgg(String entityIdStr) {
             try {
                 ResourceLocation entityLoc = ResourceLocation.tryParse(entityIdStr);
                 if (entityLoc != null) {
@@ -288,6 +290,106 @@ public class GoalEntityInteractionRecipe extends MillCraftingBaseRecipe {
                 }
             } catch (Exception ignored) {}
             return ItemStack.EMPTY;
+        }
+        /**
+         * 生成 {@code InuitHuntingDropHandler} 对应的因纽特玩家/生物击杀特殊掉落 JEI 配方列表。
+         * 包含鱿鱼(10%->生海鲜)、守卫者(2-3)、远古守卫者(5-9)、狼(0-2->生狼肉)、北极熊(1-2->生熊肉)。
+         */
+        public static List<IMillCraftingRecipe> createInuitHuntingRecipes() {
+            List<IMillCraftingRecipe> list = new ArrayList<>();
+            Component buildingLine = Component.translatableWithFallback(
+                    MillenaireJeimKeys.KEY_SUMMARY_INUIT_HUNTING_WORLD,
+                    MillenaireJeimKeys.FALLBACK_SUMMARY_INUIT_HUNTING_WORLD
+            );
+            Component playerKillLine = Component.translatableWithFallback(
+                    MillenaireJeimKeys.KEY_SUMMARY_PLAYER_KILL_LEARNED,
+                    MillenaireJeimKeys.FALLBACK_SUMMARY_PLAYER_KILL_LEARNED
+            );
+            Component anyDeathLine = Component.translatableWithFallback(
+                    MillenaireJeimKeys.KEY_SUMMARY_ANY_DEATH,
+                    MillenaireJeimKeys.FALLBACK_SUMMARY_ANY_DEATH
+            );
+
+            addHuntingRecipe(list, "inuit_hunting_squid", "minecraft:squid", "millenaire:seafood_raw",
+                    1, 10, "1", playerKillLine, buildingLine, "item.millenaire.seafood_raw");
+            addHuntingRecipe(list, "inuit_hunting_guardian", "minecraft:guardian", "millenaire:seafood_raw",
+                    2, 100, "2 - 3", playerKillLine, buildingLine, "item.millenaire.seafood_raw");
+            addHuntingRecipe(list, "inuit_hunting_elder_guardian", "minecraft:elder_guardian", "millenaire:seafood_raw",
+                    5, 100, "5 - 9", playerKillLine, buildingLine, "item.millenaire.seafood_raw");
+            addHuntingRecipe(list, "inuit_hunting_wolf", "minecraft:wolf", "millenaire:wolfmeat_raw",
+                    1, 100, "0 - 2", playerKillLine, buildingLine, "item.millenaire.wolfmeat_raw");
+            addHuntingRecipe(list, "inuit_hunting_polar_bear", "minecraft:polar_bear", "millenaire:bearmeat_raw",
+                    1, 100, "1 - 2", anyDeathLine, buildingLine, null);
+
+            return list;
+        }
+
+        private static void addHuntingRecipe(
+                List<IMillCraftingRecipe> targetList,
+                String goalKey,
+                String entityId,
+                String dropItemId,
+                int displayCount,
+                int chancePercent,
+                String amountText,
+                Component villagerSummary,
+                Component buildingSummary,
+                String requiredKnowledgeLangKey
+        ) {
+            Item dropItem = ItemHelper.resolve(dropItemId);
+            if (dropItem == null || dropItem == Items.AIR) {
+                return;
+            }
+            ItemStack spawnEgg = resolveSpawnEgg(entityId);
+            List<ItemStack> catalysts = spawnEgg.isEmpty() ? List.of() : List.of(spawnEgg);
+            List<ItemStack> outputs = List.of(new ItemStack(dropItem, Math.max(1, displayCount)));
+
+            GoalEntityInteractionRecipe recipe = new GoalEntityInteractionRecipe(
+                    ResourceLocation.fromNamespaceAndPath("millenaire", goalKey),
+                    goalKey,
+                    "inuit_hunting",
+                    List.of(),
+                    outputs,
+                    catalysts,
+                    List.of(),
+                    entityId,
+                    spawnEgg,
+                    null,
+                    null,
+                    "inuit_hunting"
+            );
+            recipe.setCustomVillagerSummary(villagerSummary);
+            recipe.setCustomBuildingSummary(buildingSummary);
+
+            if (chancePercent < 100) {
+                recipe.addOutputTooltip(dropItem, Component.translatableWithFallback(
+                        MillenaireJeimKeys.KEY_TOOLTIP_DROP_CHANCE,
+                        MillenaireJeimKeys.FALLBACK_TOOLTIP_DROP_CHANCE,
+                        chancePercent
+                ));
+            }
+            if (amountText != null && !amountText.isEmpty()) {
+                recipe.addOutputTooltip(dropItem, Component.translatableWithFallback(
+                        MillenaireJeimKeys.KEY_TOOLTIP_DROP_AMOUNT,
+                        MillenaireJeimKeys.FALLBACK_TOOLTIP_DROP_AMOUNT,
+                        amountText
+                ));
+            }
+            if (requiredKnowledgeLangKey != null && !requiredKnowledgeLangKey.isEmpty()) {
+                Component infoLine = Component.translatableWithFallback(
+                        MillenaireJeimKeys.KEY_INFO_HUNTING_KNOWLEDGE,
+                        MillenaireJeimKeys.FALLBACK_INFO_HUNTING_KNOWLEDGE,
+                        Component.translatable(requiredKnowledgeLangKey)
+                );
+                recipe.setExtraInfo(infoLine, List.of(infoLine));
+            } else {
+                Component infoLine = Component.translatableWithFallback(
+                        MillenaireJeimKeys.KEY_INFO_HUNTING_ANY_DEATH,
+                        MillenaireJeimKeys.FALLBACK_INFO_HUNTING_ANY_DEATH
+                );
+                recipe.setExtraInfo(infoLine, List.of(infoLine));
+            }
+            targetList.add(recipe);
         }
         // endregion 内部解析辅助逻辑
     }

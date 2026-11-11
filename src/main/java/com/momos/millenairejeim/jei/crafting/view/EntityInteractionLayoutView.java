@@ -2,8 +2,11 @@ package com.momos.millenairejeim.jei.crafting.view;
 
 import com.momos.millenairejeim.jei.crafting.type.GoalEntityInteractionRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -64,9 +67,19 @@ public class EntityInteractionLayoutView implements ICraftingLayoutView {
             int x = 108;
             int y = (outputs.size() == 1) ? 15 : (6 + i * 18);
 
-            builder.addOutputSlot(x, y)
+            IRecipeSlotBuilder slot = builder.addOutputSlot(x, y)
                     .setStandardSlotBackground()
                     .addItemStack(outputs.get(i));
+            if (recipe instanceof MillCraftingBaseRecipe base) {
+                slot.addRichTooltipCallback((slotView, tooltip) ->
+                        slotView.getDisplayedItemStack().ifPresent(displayed -> {
+                            List<Component> lines = base.getOutputTooltip(displayed);
+                            if (!lines.isEmpty()) {
+                                tooltip.addAll(lines);
+                            }
+                        })
+                );
+            }
         }
     }
 
@@ -78,6 +91,8 @@ public class EntityInteractionLayoutView implements ICraftingLayoutView {
                 int min = entityRecipe.getMinEntityCount() != null ? entityRecipe.getMinEntityCount() : 0;
                 int max = entityRecipe.getMaxEntityCount() != null ? entityRecipe.getMaxEntityCount() : 99;
                 guiGraphics.drawString(font, "§7群体数量阈值: §e" + min + " - " + max, 6, 36, 0x555555, false);
+            } else if (entityRecipe.getExtraInfoLine() != null) {
+                guiGraphics.drawString(font, entityRecipe.getExtraInfoLine(), 6, 36, 0x555555, false);
             }
         }
     }
@@ -86,5 +101,13 @@ public class EntityInteractionLayoutView implements ICraftingLayoutView {
     public void createRecipeExtras(IRecipeExtrasBuilder builder, IMillCraftingRecipe recipe, IFocusGroup focuses) {
         builder.addRecipeArrow()
                 .setPosition(72, 15);
+    }
+
+    @Override
+    public void getTooltip(ITooltipBuilder tooltip, IMillCraftingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        if (recipe instanceof MillCraftingBaseRecipe base && base.getExtraInfoTooltip() != null
+                && mouseX >= 6 && mouseX <= 150 && mouseY >= 34 && mouseY <= 44) {
+            tooltip.addAll(base.getExtraInfoTooltip());
+        }
     }
 }

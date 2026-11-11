@@ -93,11 +93,14 @@ public class MillenaireJeiCommands {
         }
 
         List<IMillCraftingRecipe> allRecipes = MillCraftingRecipeMaker.initRecipes(goalRegistry);
+        MillenaireAnomalyAnalyzer.ProducerIndex producerIndex = MillenaireAnomalyAnalyzer.buildProducerIndex(goalRegistry, allRecipes);
         List<String> anomalyLines = new ArrayList<>();
 
         int missingVillagerCount = 0;
         int missingBuildingCount = 0;
         int missingOutputCount = 0;
+        int unreachableInputCount = 0;
+        int semanticMismatchCount = 0;
 
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
@@ -105,8 +108,11 @@ public class MillenaireJeiCommands {
             boolean hasNoVillagers = recipe.getVillagerTypes() == null || recipe.getVillagerTypes().isEmpty();
             boolean hasNoBuildings = recipe.getAssociatedBuildingIds() == null || recipe.getAssociatedBuildingIds().isEmpty();
             boolean hasNoOutputs = recipe.getOutputs() == null || recipe.getOutputs().isEmpty();
+            List<String> unreachableInputs = MillenaireAnomalyAnalyzer.checkUnreachableInputs(recipe, producerIndex);
+            List<String> semanticMismatches = MillenaireAnomalyAnalyzer.checkSemanticMismatches(recipe, producerIndex);
 
-            if (hasNoVillagers || hasNoBuildings || hasNoOutputs) {
+            if (hasNoVillagers || hasNoBuildings || hasNoOutputs
+                    || !unreachableInputs.isEmpty() || !semanticMismatches.isEmpty()) {
                 StringBuilder line = new StringBuilder();
                 line.append(String.format("• ID: %s | Handler: %s | GoalKey: %s",
                         recipe.getId(), recipe.getHandlerId(), recipe.getGoalKey()));
@@ -123,6 +129,18 @@ public class MillenaireJeiCommands {
                     missingOutputCount++;
                     line.append(" [MISSING_OUTPUT / 缺失产物]");
                 }
+                if (!unreachableInputs.isEmpty()) {
+                    unreachableInputCount++;
+                    line.append(" [UNREACHABLE_INPUT / 无源输入: ")
+                            .append(String.join("; ", unreachableInputs))
+                            .append("]");
+                }
+                if (!semanticMismatches.isEmpty()) {
+                    semanticMismatchCount++;
+                    line.append(" [SEMANTIC_MISMATCH / 产物语义不匹配: ")
+                            .append(String.join("; ", semanticMismatches))
+                            .append("]");
+                }
                 anomalyLines.add(line.toString());
             }
         }
@@ -136,18 +154,20 @@ public class MillenaireJeiCommands {
             case EN_US -> "[Millenaire-JEI Recipe Anomalies Diagnostic Report] Timestamp: " + timestamp;
         });
         reportContent.add(String.format("Total Recipes Scanned: %d | Total Anomalies: %d", allRecipes.size(), anomalyLines.size()));
-        reportContent.add(String.format("  - Missing Villagers: %d", missingVillagerCount));
-        reportContent.add(String.format("  - Missing Buildings: %d", missingBuildingCount));
-        reportContent.add(String.format("  - Missing Outputs:   %d", missingOutputCount));
+        reportContent.add(String.format("  - Missing Villagers:   %d", missingVillagerCount));
+        reportContent.add(String.format("  - Missing Buildings:   %d", missingBuildingCount));
+        reportContent.add(String.format("  - Missing Outputs:     %d", missingOutputCount));
+        reportContent.add(String.format("  - Unreachable Inputs:  %d", unreachableInputCount));
+        reportContent.add(String.format("  - Semantic Mismatches: %d", semanticMismatchCount));
         reportContent.add("================================================================================");
         reportContent.addAll(anomalyLines);
 
         // 输出至 MMLog 日志系统
         MMLog.warn(
-                "[Millenaire-JEI] 扫描到 {} 条异常配方（无村民: {}, 无建筑: {}），详情写入日志文件",
-                "[Millenaire-JEI] Scanned {} recipe anomalies (no villagers: {}, no buildings: {}), details written to log",
-                "[Millenaire-JEI] {} anomalies de recettes détectées (sans villageois: {}, sans bâtiment: {}), détails écrits",
-                anomalyLines.size(), missingVillagerCount, missingBuildingCount
+                "[Millenaire-JEI] 扫描到 {} 条异常配方（无村民: {}, 无建筑: {}, 无源输入: {}, 语义不匹配: {}），详情写入日志文件",
+                "[Millenaire-JEI] Scanned {} recipe anomalies (no villagers: {}, no buildings: {}, unreachable inputs: {}, semantic mismatches: {}), details written to log",
+                "[Millenaire-JEI] {} anomalies détectées (sans villageois: {}, sans bâtiment: {}, entrées inatteignables: {}, incohérences sémantiques: {}), détails écrits",
+                anomalyLines.size(), missingVillagerCount, missingBuildingCount, unreachableInputCount, semanticMismatchCount
         );
 
         // 写入独立文件

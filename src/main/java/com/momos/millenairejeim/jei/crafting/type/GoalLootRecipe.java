@@ -3,9 +3,11 @@ package com.momos.millenairejeim.jei.crafting.type;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
@@ -16,7 +18,9 @@ import org.millenaire.goal.gathering.GatheringType;
 import org.millenaire.item.ItemHelper;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -54,11 +58,12 @@ public class GoalLootRecipe extends MillCraftingBaseRecipe {
             JsonObject params = type.handlerParams();
             List<AbstractMillCraftingType.IngredientWithCount> rawInputs = new ArrayList<>();
             List<ItemStack> outputs = new ArrayList<>();
+            Map<Item, List<Component>> pendingTooltips = new LinkedHashMap<>();
 
             // 1. 解析基础输入（工具或来源方块，如有）
             parseInputs(params, rawInputs);
 
-            // 2. 核心逻辑：专门解析 handlerParams 中的 "loot" 数组（形如 [{"item": "...", "count": 1}]）
+            // 2. 核心逻辑：专门解析 handlerParams 中的 "loot" 数组（形如 [{"item": "...", "count": 1, "chance": 100}]）
             if (params != null && params.has("loot")) {
                 JsonElement lootElem = params.get("loot");
                 if (lootElem.isJsonArray()) {
@@ -66,22 +71,51 @@ public class GoalLootRecipe extends MillCraftingBaseRecipe {
                     for (JsonElement elem : lootArray) {
                         if (elem.isJsonObject()) {
                             JsonObject lootObj = elem.getAsJsonObject();
+                            int chance = GsonHelper.getAsInt(lootObj, "chance", 100);
+                            int count = GsonHelper.getAsInt(lootObj, JSON_KEY_COUNT, 1);
+                            if (chance <= 0 || count <= 0) {
+                                continue;
+                            }
                             String itemId = GsonHelper.getAsString(lootObj, JSON_KEY_ITEM, "");
                             if (itemId.isEmpty()) {
                                 itemId = GsonHelper.getAsString(lootObj, "id", "");
                             }
-                            int count = GsonHelper.getAsInt(lootObj, JSON_KEY_COUNT, 1);
                             Item item = ItemHelper.resolve(itemId);
                             if (item != null && item != Items.AIR) {
                                 outputs.add(new ItemStack(item, count));
+                                if (chance < 100) {
+                                    pendingTooltips.computeIfAbsent(item, k -> new ArrayList<>())
+                                            .add(Component.translatableWithFallback(
+                                                    MillenaireJeimKeys.KEY_TOOLTIP_DROP_CHANCE,
+                                                    MillenaireJeimKeys.FALLBACK_TOOLTIP_DROP_CHANCE,
+                                                    chance
+                                            ));
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // 3. 兜底输出解析：若未查找到 loot 节点，调用基类通用输出提取
-            if (outputs.isEmpty()) {
+            String handlerId = type.handlerId();
+            boolean isFishingInuit = "fishing_inuit".equalsIgnoreCase(handlerId);
+
+            // 3. 针对因纽特捕鱼的硬编码保底与额外骨块规则 (FishingInuitHandler)
+            if (isFishingInuit) {
+                if (outputs.isEmpty()) {
+                    outputs.add(new ItemStack(Items.COD, 1));
+                }
+                if (!containsItem(outputs, Items.BONE_BLOCK)) {
+                    outputs.add(new ItemStack(Items.BONE_BLOCK, 1));
+                }
+                pendingTooltips.computeIfAbsent(Items.BONE_BLOCK, k -> new ArrayList<>())
+                        .add(Component.translatableWithFallback(
+                                MillenaireJeimKeys.KEY_TOOLTIP_DROP_CHANCE,
+                                MillenaireJeimKeys.FALLBACK_TOOLTIP_DROP_CHANCE,
+                                25
+                        ));
+            } else if (outputs.isEmpty()) {
+                // 4. 兜底输出解析：若未查找到 loot 节点，调用基类通用输出提取
                 parseOutputs(type, params, outputs);
             }
 
@@ -95,9 +129,9 @@ public class GoalLootRecipe extends MillCraftingBaseRecipe {
                     .collect(Collectors.toList());
 
             String goalKey = type.id() != null ? type.id().getPath() : "unknown";
-            String handlerId = type.handlerId();
-
-            return new GoalLootRecipe(type.id(), goalKey, handlerId, inputs, outputs, List.of(), villagers);
+            GoalLootRecipe recipe = new GoalLootRecipe(type.id(), goalKey, handlerId, inputs, outputs, List.of(), villagers);
+            pendingTooltips.forEach(recipe::addOutputTooltips);
+            return recipe;
         }
     }
 }
