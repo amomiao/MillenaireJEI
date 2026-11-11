@@ -2,7 +2,10 @@ package com.momos.millenairejeim.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.momos.millenairejeim.MillenaireJeim;
+import com.momos.millenairejeim.config.MillJeiConfigManager;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeMaker;
@@ -52,6 +55,7 @@ public class MillenaireJeiCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal("milljei")
+                .then(Commands.literal("reload").executes(ctx -> reloadConfigs(ctx.getSource())))
                 .then(Commands.literal("export")
                         .then(Commands.literal("anomalies").executes(ctx -> exportAnomalies(ctx.getSource())))
                         .then(Commands.literal("english_crafts").executes(ctx -> exportEnglishCrafts(ctx.getSource())))
@@ -63,12 +67,30 @@ public class MillenaireJeiCommands {
 
         // 注册常用别名
         dispatcher.register(Commands.literal("milljeim")
+                .then(Commands.literal("reload").executes(ctx -> reloadConfigs(ctx.getSource())))
                 .then(Commands.literal("export")
                         .then(Commands.literal("anomalies").executes(ctx -> exportAnomalies(ctx.getSource())))
                         .then(Commands.literal("english_crafts").executes(ctx -> exportEnglishCrafts(ctx.getSource())))
                         .then(Commands.literal("all").executes(ctx -> exportAll(ctx.getSource())))
                         .executes(ctx -> exportAll(ctx.getSource()))
                 ));
+    }
+
+    /** 重载 {@code config/millenairejeim/} 外部配置目录并刷新 JEI 动态配方缓存。*/
+    public static int reloadConfigs(CommandSourceStack source) {
+        MillJeiConfigManager.clearCache();
+        int spotCount = MillJeiConfigManager.getSpotGatheringConfigs().size();
+        int customCount = MillJeiConfigManager.getCustomGoalConfigs().size();
+        MMLog.info(
+                "[Millenaire-JEI] 手动重载外部配置完成：spot_gathering={} 条索引，custom_goals={} 条条目。",
+                "[Millenaire-JEI] Reloaded external JEI configs: spot_gathering={} keys, custom_goals={} entries.",
+                "[Millenaire-JEI] Rechargement des configs JEI externes terminé : spot_gathering={}, custom_goals={}.",
+                spotCount, customCount
+        );
+        source.sendSuccess(() -> Component.literal(String.format(
+                "§6[Millenaire-JEI] §f外部配置已重载: §e%d§f 条定点配置键, §a%d§f 条配置目标 (log: §b%s§f)",
+                spotCount, customCount, MMLog.getLogFilePath().toAbsolutePath())), false);
+        return customCount;
     }
 
     private static int exportAll(CommandSourceStack source) {

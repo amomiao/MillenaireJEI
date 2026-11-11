@@ -2,6 +2,42 @@
 
 ---
 
+## [v1.3.7] - 2026-11-11
+
+### 🏷️ 运行时建筑标签图谱与 `buildingTag` / `requiredTag` 工艺解析修复 (ISSUE-005)
+- **全量建筑标签与子建筑预索引 (`MillenaireDatabase` / `MillenaireAPIHelper`)**：
+  - 在 `MillenaireDatabase` 中预构建建筑完整运行时标签索引（整合顶层 `BuildingPlanSet.tags()`、全变体/全等级 `ModCultures.getBuildingPlan(planId).tags()` 及子建筑 `LevelDef.parentTags()` 授予标签）与父子建筑结构映射；
+  - 新增 `MillenaireAPIHelper.getBuildingAllTags`、`buildingHasTag`、`getBuildingsByTag(buildingTag, requiredTag, cultureFilter)` 与 `getBuildingSubBuildings`，将 `GoalSpotRecipe.resolveBuildingsWithTag` 与 `MillenaireAnomalyAnalyzer` 统一切换至全量标签判定。
+- **遵循 Millénaire 9.1.0 `AbstractGatheringHandler.resolveCandidateBuildings` 语义**：
+  - 扩展 `IMillCraftingRecipe`（默认方法 `getBuildingTag()` / `getRequiredTag()`）与 `MillCraftingBaseRecipe`（`setTagConstraints`、`applyTagConstraints`），并在 `MillCraftingRecipe.parse(...)` 统一注入 `handlerParams.buildingTag` 与 `handlerParams.requiredTag`；
+  - 修复 `craft_iron_workshop`（`buildingTag="centralworkshop"` → 精准解析 `byzantines/workshop`）、`craft_mineiron`（`buildingTag="ironmine"` → `seljuk/lonemine`, `seljuk/mine_brick`）与 `craft_iron`（`requiredTag="forge"` → 剔除 `banditcamp` / `bandittower`）等配方的所属建筑解析错误，`GoalSpotRecipe` 同步对齐标签解析与确定性排序；
+  - 在 `MillCraftingRecipeMaker#buildGoalToVillagerMap` 与 `GoalConfigRecipe#getAssociatedBuildingIds` 中补全确定性排序，覆盖 `GoalConfigRecipe#getBuildingTag()` 导出支持。
+
+---
+
+## [v1.3.6] - 2026-11-11
+
+### ⚙️ 外部配置系统、独立配置目标页签与双写日志
+- **MMLog 双写独立日志 (`logs/millenairejeim.log`)**：改造 `MMLog`，在保留 Minecraft 标准主日志（SLF4J）基础上同步双写 UTF-8 独立日志文件（每次客户端启动刷新独立会话横幅，提供 `getLogFilePath()` 与 `error(...)`），方便快速排查配置解析、未注入 Goal 告警与反射降级信息。
+- **SpotGatheringGoal 外部配置化 (`config/millenairejeim/spot_gathering/`)**：
+  - 彻底取消 `GoalSpotRecipe` 原有的硬编码 `switch (goalKey)`，首次启动由 `MillJeiConfigManager` 自动生成 `_README.txt` 与 6 份默认 JSON（`gather_silk`、`gather_snails`、`gather_brick`、`dry_brick`、`harvest_sugar_cane`、`plant_sugar_cane`）；
+  - 当运行时自动化检测到未被配置覆盖的新 `SpotGatheringGoal` 时，去重输出双写 WARNING 告警并提示对应 `.json` 注入方式，同时在允许时按反射 `stockItem` 降级显示。
+- **纯外部配置 Goal 独立页签 (`millenaire:custom_goals` / `config/millenairejeim/custom_goals/`)**：
+  - 注册独立 JEI 页签 **`millenaire:custom_goals`**（**千年配置目标**），采用 **千年旅行书**（`ModItems.TRAVEL_BOOK`）作为图标，新建 `MillCustomGoalCategory`（继承 `BaseGoalCraftingCategory` 保持 `MillenaireJEIe` 加号联动兼容）、`GoalConfigRecipe`（支持 `goalIds` 合并同类目标并自动关联执行村民与建筑）与 `ConfigGoalLayoutView`；
+  - 经完整审计 `millenaire-9.1.0.jar` 剩余 Goal 后预置 **25 份**高价值配置（`planting`、`paddy_planting`、`cocoa_planting`、`sapling_planting`、`flower_planting`、`take_from_building`、`gather_goods`、`get_tool`、`light_hearth`、`build_path`），默认排除纯 AI 作息、战斗与纯视觉手持物目标，且与 `/milljei export anomalies` 隔离不产生误报。
+- **配置热重载与本地化**：新增客户端命令 `/milljei reload` 与 `/milljeim reload` 实时刷新外部配置缓存；补全 9 国语言包全部新增与历史缺漏键至统一 127 条；并将双写日志与配置扩展 Skill 沉淀至 `readme.md` 及 `.vibe/AI_Skill/`。
+
+---
+
+## [v1.3.5] - 2026-11-11
+
+### 🏷️ 独立页签拆分：千年定点采集 (`MillSpotGatheringCategory`)
+- **独立反射型定点工艺页签**：将依赖反射读取 `SpotGatheringGoal` 私有字段获取产物与限制信息的定点采集/处理工艺（`GoalSpotRecipe`：蚕茧、蜗牛紫染料、泥砖收集、湿砖日光晒干、甘蔗收种等）从【千年村庄工艺】拆出，独立注册为 **`millenaire:spot_gathering`**（**千年定点采集**）页签，并使用 **蚕块**（`ModItems.SILK_WORM_ITEM` / `millenaire:silk_worm`）作为页签图标。
+- **泛型基类复用 (`BaseGoalCraftingCategory`)**：从 `MillCraftingCategory` 抽取通用工艺页签基类 `BaseGoalCraftingCategory<T extends IMillCraftingRecipe>`，派生 `MillCraftingCategory` 与强类型 `MillSpotGatheringCategory`，统一保留 `160x110` 布局、村民/建筑轮播槽位及与 `MillenaireJEIe` 联动的详情 `+` 跳转按钮，并在悬停类型/建筑行时展示 `buildingTag` 与 `townhallLimit` Tooltip。
+- **JEI 动态路由与命令兼容**：`MillCraftingRecipeMaker` 拆分 `initStandardCraftingRecipes` 与 `getSpotGatheringRecipes`（`initRecipes` 保持返回全量供命令诊断使用）；`MillCraftingRecipeManagerPlugin` 新增 `GoalRegistry` 引用新鲜度检测，按 `CRAFTING_TYPE` 与 `SPOT_GATHERING_TYPE` 互斥分流缓存与 `IFocus` 焦点匹配。
+
+---
+
 ## [v1.3.4] - 2026-11-11
 
 ### 🧪 工艺页签运行时硬编码与 Handler 补全

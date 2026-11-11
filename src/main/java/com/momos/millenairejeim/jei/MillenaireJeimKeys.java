@@ -48,6 +48,14 @@ public final class MillenaireJeimKeys {
     public static final String KEY_CATEGORY_CRAFTING = "jei.millenaire.category.crafting";
     public static final String FALLBACK_CATEGORY_CRAFTING = "Millénaire Crafting";
 
+    /** 千年定点采集页签标题 Key */
+    public static final String KEY_CATEGORY_SPOT_GATHERING = "jei.millenaire.category.spot_gathering";
+    public static final String FALLBACK_CATEGORY_SPOT_GATHERING = "Millénaire Spot Gathering";
+
+    /** 千年配置目标页签标题 Key */
+    public static final String KEY_CATEGORY_CUSTOM_GOALS = "jei.millenaire.category.custom_goals";
+    public static final String FALLBACK_CATEGORY_CUSTOM_GOALS = "Millénaire Configured Goals";
+
     /** 油漆染色页签标题 Key */
     public static final String KEY_CATEGORY_PAINTING = "jei.millenaire.category.painting";
     public static final String FALLBACK_CATEGORY_PAINTING = "Paint Dyeing";
@@ -179,6 +187,15 @@ public final class MillenaireJeimKeys {
 
     public static final String KEY_TOOLTIP_SPOT_TOWNHALL_LIMIT = "jei.millenaire.crafting.tooltip.spot_townhall_limit";
     public static final String FALLBACK_TOOLTIP_SPOT_TOWNHALL_LIMIT = "§7Townhall Stock Limit: %d";
+
+    public static final String KEY_TOOLTIP_SPOT_BUILDING_TAG = "jei.millenaire.crafting.tooltip.spot_building_tag";
+    public static final String FALLBACK_TOOLTIP_SPOT_BUILDING_TAG = "§7Building Tag: §b%s";
+
+    public static final String KEY_TOOLTIP_CONFIG_SOURCE_FILE = "jei.millenaire.crafting.tooltip.config_source_file";
+    public static final String FALLBACK_TOOLTIP_CONFIG_SOURCE_FILE = "§7Config File: §f%s";
+
+    public static final String KEY_TOOLTIP_CONFIG_BOUND_GOALS = "jei.millenaire.crafting.tooltip.config_bound_goals";
+    public static final String FALLBACK_TOOLTIP_CONFIG_BOUND_GOALS = "§7Bound Goals: §e%s";
 
     public static final String KEY_INFO_HUNTING_KNOWLEDGE = "jei.millenaire.crafting.info.hunting_knowledge";
     public static final String FALLBACK_INFO_HUNTING_KNOWLEDGE = "§7Requires: §e%s";

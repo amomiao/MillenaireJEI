@@ -1,6 +1,9 @@
 package com.momos.millenairejeim.jei.crafting;
 
+import com.momos.millenairejeim.config.CustomGoalConfigEntry;
+import com.momos.millenairejeim.config.MillJeiConfigManager;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.jei.crafting.type.GoalConfigRecipe;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.util.MMLog;
 import net.minecraft.resources.ResourceLocation;
@@ -14,6 +17,7 @@ import org.millenaire.goal.gathering.GatheringType;
 import org.millenaire.goal.impl.SpotGatheringGoal;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +42,8 @@ public class MillCraftingRecipeMaker {
     public static List<IMillCraftingRecipe> getChoppingRecipes(GoalRegistry activeRegistry) {return getRecipesByHandlers(activeRegistry, MillCraftingRecipeManagerPlugin.ChoppingTypeSet);}
 
     /** 提取 Java 硬编码的 {@link SpotGatheringGoal} 定点采集/处理配方 */
-    public static List<IMillCraftingRecipe> getSpotGatheringRecipes(GoalRegistry activeRegistry) {
-        List<IMillCraftingRecipe> recipes = new ArrayList<>();
+    public static List<GoalSpotRecipe> getSpotGatheringRecipes(GoalRegistry activeRegistry) {
+        List<GoalSpotRecipe> recipes = new ArrayList<>();
         if (activeRegistry == null) {
             return recipes;
         }
@@ -67,17 +71,41 @@ public class MillCraftingRecipeMaker {
         return GoalEntityInteractionRecipe.Parser.createInuitHuntingRecipes();
     }
 
-    /** 初始化获得条目 */
-    public static List<IMillCraftingRecipe> initRecipes(GoalRegistry activeRegistry) {
-        // [新注释] 合并提取手工、冶炼、采掘以及农林收割等全部单页签配方
+    /** 提取纯由 {@code config/millenairejeim/custom_goals/*.json} 外部注入的自定义目标配方 */
+    public static List<GoalConfigRecipe> getCustomGoalRecipes(GoalRegistry activeRegistry) {
+        List<CustomGoalConfigEntry> entries = MillJeiConfigManager.getCustomGoalConfigs();
+        if (entries.isEmpty()) {
+            return List.of();
+        }
+        Map<ResourceLocation, List<VillagerType>> goalToVillagers = activeRegistry != null
+                ? buildGoalToVillagerMap()
+                : Map.of();
+        List<GoalConfigRecipe> recipes = new ArrayList<>(entries.size());
+        for (CustomGoalConfigEntry entry : entries) {
+            GoalConfigRecipe recipe = GoalConfigRecipe.fromConfig(entry, goalToVillagers);
+            if (recipe != null) {
+                recipes.add(recipe);
+            }
+        }
+        return recipes;
+    }
+
+    /** 提取【千年村庄工艺】常规页签配方（不含 Java 硬编码 SpotGatheringGoal，供主工艺页签使用） */
+    public static List<IMillCraftingRecipe> initStandardCraftingRecipes(GoalRegistry activeRegistry) {
         List<IMillCraftingRecipe> recipes = new ArrayList<>();
         recipes.addAll(getCraftingRecipes(activeRegistry));
         recipes.addAll(getLootTypeSetRecipes(activeRegistry));
         recipes.addAll(getHarvestTypeSetRecipes(activeRegistry));
         recipes.addAll(getOfEntityTypeSetRecipes(activeRegistry));
         recipes.addAll(getChoppingRecipes(activeRegistry));
-        recipes.addAll(getSpotGatheringRecipes(activeRegistry));
         recipes.addAll(getInuitHuntingRecipes());
+        return recipes;
+    }
+
+    /** 初始化全量工艺与定点采集条目（供命令诊断与全量索引扫描） */
+    public static List<IMillCraftingRecipe> initRecipes(GoalRegistry activeRegistry) {
+        List<IMillCraftingRecipe> recipes = new ArrayList<>(initStandardCraftingRecipes(activeRegistry));
+        recipes.addAll(getSpotGatheringRecipes(activeRegistry));
         return recipes;
     }
 
@@ -252,6 +280,12 @@ public class MillCraftingRecipeMaker {
                     }
                 }
             }
+        }
+        Comparator<VillagerType> villagerIdComp = Comparator.comparing(
+                v -> v.id() != null ? v.id().toString() : ""
+        );
+        for (List<VillagerType> list : map.values()) {
+            list.sort(villagerIdComp);
         }
         return map;
     }

@@ -6,6 +6,7 @@ import com.momos.millenairejeim.jei.crafting.type.GoalHarvestRecipe;
 import com.momos.millenairejeim.jei.crafting.type.GoalLootRecipe;
 import com.momos.millenairejeim.jei.crafting.type.AbstractMillCraftingType;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
 import com.momos.millenairejeim.jei.crafting.type.GoalCraftingRecipe;
 import org.millenaire.culture.VillagerType;
 import org.millenaire.goal.gathering.GatheringType;
@@ -44,6 +45,9 @@ public final class MillCraftingRecipe {
             if (parser.supports(handlerId, type)) {
                 IMillCraftingRecipe recipe = parser.parse(type, villagers);
                 if (recipe != null) {
+                    if (recipe instanceof MillCraftingBaseRecipe baseRecipe) {
+                        baseRecipe.applyTagConstraints(type);
+                    }
                     return recipe;
                 }
             }

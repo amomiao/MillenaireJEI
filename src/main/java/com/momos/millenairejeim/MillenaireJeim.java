@@ -1,5 +1,6 @@
 package com.momos.millenairejeim;
 
+import com.momos.millenairejeim.config.MillJeiConfigManager;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.util.MMLog;
 import net.minecraft.client.Minecraft;
@@ -35,11 +36,12 @@ public class MillenaireJeim {
             String clientLang = Minecraft.getInstance().options.languageCode;
             MMLog.setLanguageFromCode(clientLang);
             MMLog.info(
-                    "[Millenaire-JEI] 已根据客户端语言设置日志语言为: {}",
-                    "[Millenaire-JEI] Log language updated based on client settings: {}",
-                    "[Millenaire-JEI] Langue des journaux mise à jour selon le client: {}",
-                    MMLog.getCurrentLanguage()
+                    "[Millenaire-JEI] 已根据客户端语言设置日志语言为: {}（专属日志文件: {}）",
+                    "[Millenaire-JEI] Log language updated based on client settings: {} (dedicated log: {})",
+                    "[Millenaire-JEI] Langue des journaux mise à jour selon le client: {} (journal dédié: {})",
+                    MMLog.getCurrentLanguage(), MMLog.getLogFilePath()
             );
+            MillJeiConfigManager.ensureInitialized();
         });
     }
 

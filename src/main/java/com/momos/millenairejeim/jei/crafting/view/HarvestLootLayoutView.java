@@ -95,30 +95,7 @@ public class HarvestLootLayoutView implements ICraftingLayoutView {
 
         boolean hasBonus = recipe instanceof GoalHarvestRecipe harvest && !harvest.getIrrigationBonusCrop().isEmpty();
         List<ItemStack> outputs = recipe.getOutputs();
-        if (outputs.size() <= 2) {
-            int baseX = hasBonus ? 102 : 108;
-            for (int i = 0; i < outputs.size(); i++) {
-                int y = (outputs.size() == 1) ? 15 : (6 + i * 18);
-                IRecipeSlotBuilder slot = builder.addOutputSlot(baseX, y)
-                        .setStandardSlotBackground()
-                        .addItemStack(outputs.get(i));
-                attachOutputTooltips(slot, recipe);
-            }
-        } else {
-            int cols = hasBonus ? 2 : 3;
-            int maxSlots = cols * 2;
-            for (int i = 0; i < Math.min(outputs.size(), maxSlots); i++) {
-                int x = 96 + (i % cols) * 18;
-                int y = 4 + (i / cols) * 18;
-                IRecipeSlotBuilder slot = builder.addOutputSlot(x, y).setStandardSlotBackground();
-                if (i == maxSlots - 1 && outputs.size() > maxSlots) {
-                    slot.addIngredients(VanillaTypes.ITEM_STACK, outputs.subList(maxSlots - 1, outputs.size()));
-                } else {
-                    slot.addItemStack(outputs.get(i));
-                }
-                attachOutputTooltips(slot, recipe);
-            }
-        }
+        renderOutputGrid(builder, recipe, outputs, hasBonus);
 
         if (hasBonus) {
             GoalHarvestRecipe harvest = (GoalHarvestRecipe) recipe;
@@ -170,7 +147,42 @@ public class HarvestLootLayoutView implements ICraftingLayoutView {
         }
     }
 
-    private static void attachOutputTooltips(IRecipeSlotBuilder slot, IMillCraftingRecipe recipe) {
+    public static void renderOutputGrid(
+            IRecipeLayoutBuilder builder,
+            IMillCraftingRecipe recipe,
+            List<ItemStack> outputs,
+            boolean hasBonus
+    ) {
+        if (outputs == null || outputs.isEmpty()) {
+            return;
+        }
+        if (outputs.size() <= 2) {
+            int baseX = hasBonus ? 102 : 108;
+            for (int i = 0; i < outputs.size(); i++) {
+                int y = (outputs.size() == 1) ? 15 : (6 + i * 18);
+                IRecipeSlotBuilder slot = builder.addOutputSlot(baseX, y)
+                        .setStandardSlotBackground()
+                        .addItemStack(outputs.get(i));
+                attachOutputTooltips(slot, recipe);
+            }
+        } else {
+            int cols = hasBonus ? 2 : 3;
+            int maxSlots = cols * 2;
+            for (int i = 0; i < Math.min(outputs.size(), maxSlots); i++) {
+                int x = 96 + (i % cols) * 18;
+                int y = 4 + (i / cols) * 18;
+                IRecipeSlotBuilder slot = builder.addOutputSlot(x, y).setStandardSlotBackground();
+                if (i == maxSlots - 1 && outputs.size() > maxSlots) {
+                    slot.addIngredients(VanillaTypes.ITEM_STACK, outputs.subList(maxSlots - 1, outputs.size()));
+                } else {
+                    slot.addItemStack(outputs.get(i));
+                }
+                attachOutputTooltips(slot, recipe);
+            }
+        }
+    }
+
+    public static void attachOutputTooltips(IRecipeSlotBuilder slot, IMillCraftingRecipe recipe) {
         if (!(recipe instanceof MillCraftingBaseRecipe base)) {
             return;
         }

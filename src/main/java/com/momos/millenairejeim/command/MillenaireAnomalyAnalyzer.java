@@ -328,8 +328,8 @@ final class MillenaireAnomalyAnalyzer {
             Collection<BuildingPlanSet> allBuildings = MillenaireAPIHelper.getAllBuildings();
             if (allBuildings != null) {
                 for (BuildingPlanSet building : allBuildings) {
-                    if (building != null && building.culture() != null && building.tags() != null
-                            && building.tags().stream().anyMatch(t -> buildingTag.equalsIgnoreCase(t))) {
+                    if (building != null && building.culture() != null
+                            && MillenaireAPIHelper.buildingHasTag(building, buildingTag)) {
                         cultures.add(building.culture());
                     }
                 }

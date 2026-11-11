@@ -4,6 +4,7 @@ package com.momos.millenairejeim.jei.crafting.type.base;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import org.jetbrains.annotations.Nullable;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.VillagerType;
 
@@ -21,6 +22,16 @@ public interface IMillCraftingRecipe {
     String getGoalKey();
 
     String getHandlerId();
+
+    @Nullable
+    default String getBuildingTag() {
+        return null;
+    }
+
+    @Nullable
+    default String getRequiredTag() {
+        return null;
+    }
 
     List<IngredientWithCount> getInputs();
 

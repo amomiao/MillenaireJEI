@@ -1,20 +1,26 @@
 package com.momos.millenairejeim.jei.crafting.type.base;
 
+import com.google.gson.JsonObject;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import org.millenaire.building.BuildingPlanSet;
+import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.VillagerType;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.millenaire.goal.gathering.GatheringType;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 千年工艺 JEI 配方通用基类。
@@ -30,6 +36,10 @@ public abstract class MillCraftingBaseRecipe implements IMillCraftingRecipe {
     private final List<ItemStack> catalysts;
     private final List<VillagerType> villagerTypes;
     private final Map<Item, List<Component>> outputTooltips = new LinkedHashMap<>();
+    @Nullable
+    private String buildingTag;
+    @Nullable
+    private String requiredTag;
     @Nullable
     private Component customVillagerSummary;
     @Nullable
@@ -67,6 +77,35 @@ public abstract class MillCraftingBaseRecipe implements IMillCraftingRecipe {
     }
 
     @Override
+    @Nullable
+    public String getBuildingTag() {
+        return buildingTag;
+    }
+
+    @Override
+    @Nullable
+    public String getRequiredTag() {
+        return requiredTag;
+    }
+
+    /** 设置当前配方在底层 Goal 执行时要求的目标建筑标签（{@code buildingTag}）与前置必需标签（{@code requiredTag}）。 */
+    public void setTagConstraints(@Nullable String buildingTag, @Nullable String requiredTag) {
+        this.buildingTag = normalizeTag(buildingTag);
+        this.requiredTag = normalizeTag(requiredTag);
+    }
+
+    /** 从 {@link GatheringType#handlerParams()} 提取 {@code buildingTag} / {@code requiredTag} 约束。 */
+    public void applyTagConstraints(@Nullable GatheringType type) {
+        if (type == null || type.handlerParams() == null) {
+            return;
+        }
+        JsonObject params = type.handlerParams();
+        String bt = GsonHelper.getAsString(params, "buildingTag", null);
+        String rt = GsonHelper.getAsString(params, "requiredTag", null);
+        setTagConstraints(bt, rt);
+    }
+
+    @Override
     public List<IngredientWithCount> getInputs() {
         return inputs;
     }
@@ -88,22 +127,47 @@ public abstract class MillCraftingBaseRecipe implements IMillCraftingRecipe {
 
     @Override
     public List<BuildingPlanSet> getAssociatedBuildingIds() {
-        if (villagerTypes == null || villagerTypes.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<BuildingPlanSet> buildings = new ArrayList<>();
-        for (VillagerType villagerType : villagerTypes) {
-            if (villagerType == null) continue;
-            List<BuildingPlanSet> mappedBuildings = MillenaireAPIHelper.MappingVillagerBuilding(villagerType);
-            if (mappedBuildings != null) {
-                for (BuildingPlanSet bps : mappedBuildings) {
-                    if (bps != null && !buildings.contains(bps)) {
-                        buildings.add(bps);
+        Comparator<BuildingPlanSet> byId = Comparator.comparing(
+                b -> b.id() != null ? b.id().toString() : String.valueOf(b.buildingId())
+        );
+        Set<ResourceLocation> villagerCultures = new LinkedHashSet<>();
+        Set<BuildingPlanSet> residingBuildings = new LinkedHashSet<>();
+        if (villagerTypes != null) {
+            for (VillagerType villagerType : villagerTypes) {
+                if (villagerType == null) continue;
+                if (villagerType.culture() != null) {
+                    villagerCultures.add(villagerType.culture());
+                }
+                List<BuildingPlanSet> mappedBuildings = MillenaireAPIHelper.MappingVillagerBuilding(villagerType);
+                if (mappedBuildings != null) {
+                    for (BuildingPlanSet bps : mappedBuildings) {
+                        if (bps != null) {
+                            residingBuildings.add(bps);
+                        }
                     }
                 }
             }
         }
-        return buildings;
+
+        // 1. 若指定了 buildingTag，严格对齐 AbstractGatheringHandler.resolveCandidateBuildings:
+        // 在执行村民所属文化(无执行者时为全量建筑)中检索拥有该标签的全部运行建筑，并按 requiredTag 过滤
+        if (buildingTag != null && !buildingTag.isBlank()) {
+            return MillenaireAPIHelper.getBuildingsByTag(buildingTag, requiredTag, villagerCultures);
+        }
+
+        // 2. 若未指定 buildingTag 但指定了 requiredTag，则仅保留具备该标签的村民居住建筑（排除如 banditcamp 等无 forge 标签建筑）
+        if (residingBuildings.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (requiredTag != null && !requiredTag.isBlank()) {
+            return residingBuildings.stream()
+                    .filter(bps -> MillenaireAPIHelper.buildingHasTag(bps, requiredTag))
+                    .sorted(byId)
+                    .toList();
+        }
+
+        // 3. 无标签限制时返回确定性排序的居住建筑列表
+        return residingBuildings.stream().sorted(byId).toList();
     }
 
     /** 为指定产出物附加概率、掉落范围或说明 Tooltip */
@@ -125,6 +189,12 @@ public abstract class MillCraftingBaseRecipe implements IMillCraftingRecipe {
         }
         List<Component> list = outputTooltips.get(stack.getItem());
         return list != null ? Collections.unmodifiableList(list) : Collections.emptyList();
+    }
+
+    /** 获取前端展示用的目标名称组件（子类可覆写以提供外部配置自定义标题） */
+    public Component getDisplayGoalName() {
+        String rawGoalKey = goalKey != null ? goalKey : (id != null ? id.getPath() : "unknown");
+        return MillenaireLocalizeHelper.getGoalName(rawGoalKey);
     }
 
     @Nullable
@@ -168,5 +238,13 @@ public abstract class MillCraftingBaseRecipe implements IMillCraftingRecipe {
             }
         }
         return false;
+    }
+
+    @Nullable
+    private static String normalizeTag(@Nullable String rawTag) {
+        if (rawTag == null || rawTag.isBlank()) {
+            return null;
+        }
+        return rawTag.trim();
     }
 }

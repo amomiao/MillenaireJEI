@@ -6,6 +6,11 @@ import com.momos.millenairejeim.jei.Trade.MillTradeCategory;
 import com.momos.millenairejeim.jei.Trade.MillTradeRecipe;
 import com.momos.millenairejeim.jei.Trade.MillTradeRecipeMaker;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
+import com.momos.millenairejeim.jei.crafting.MillCustomGoalCategory;
+import com.momos.millenairejeim.jei.crafting.MillSpotGatheringCategory;
+import com.momos.millenairejeim.jei.crafting.type.GoalConfigRecipe;
+import com.momos.millenairejeim.jei.crafting.MillSpotGatheringCategory;
+import com.momos.millenairejeim.jei.crafting.type.GoalSpotRecipe;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeManagerPlugin;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.jei.paint.MillPaintCategory;
@@ -43,6 +48,8 @@ public class MillenaireJeimPlugin implements IModPlugin {
     public static final RecipeType<MillTradeRecipe> TRADE_SELL_TYPE = RecipeType.create("millenaire", "village_sell", MillTradeRecipe.class);
     public static final RecipeType<MillTradeRecipe> TRADE_BUY_TYPE = RecipeType.create("millenaire", "village_buy", MillTradeRecipe.class);
     public static final RecipeType<IMillCraftingRecipe> CRAFTING_TYPE = RecipeType.create("millenaire", "crafting", IMillCraftingRecipe.class);
+    public static final RecipeType<GoalSpotRecipe> SPOT_GATHERING_TYPE = RecipeType.create("millenaire", "spot_gathering", GoalSpotRecipe.class);
+    public static final RecipeType<GoalConfigRecipe> CUSTOM_GOALS_TYPE = RecipeType.create("millenaire", "custom_goals", GoalConfigRecipe.class);
     public static final RecipeType<MillPaintRecipe> PAINT_TYPE = RecipeType.create("millenaire", "painting", MillPaintRecipe.class);
 
     @Override
@@ -100,6 +107,26 @@ public class MillenaireJeimPlugin implements IModPlugin {
                         MillenaireJeimKeys.FALLBACK_CATEGORY_CRAFTING
                 ),
                 new ItemStack(ModItems.TIMBER_FRAME_CROSS_ITEM.get())
+        ));
+        // 注册【千年定点采集】Category（使用蚕块作为页签图标）
+        registration.addRecipeCategories(new MillSpotGatheringCategory(
+                guiHelper,
+                SPOT_GATHERING_TYPE,
+                Component.translatableWithFallback(
+                        MillenaireJeimKeys.KEY_CATEGORY_SPOT_GATHERING,
+                        MillenaireJeimKeys.FALLBACK_CATEGORY_SPOT_GATHERING
+                ),
+                new ItemStack(ModItems.SILK_WORM_ITEM.get())
+        ));
+        // 注册【千年配置目标】Category（纯外部 config/millenairejeim/custom_goals/ 注入驱动）
+        registration.addRecipeCategories(new MillCustomGoalCategory(
+                guiHelper,
+                CUSTOM_GOALS_TYPE,
+                Component.translatableWithFallback(
+                        MillenaireJeimKeys.KEY_CATEGORY_CUSTOM_GOALS,
+                        MillenaireJeimKeys.FALLBACK_CATEGORY_CUSTOM_GOALS
+                ),
+                new ItemStack(ModItems.TRAVEL_BOOK.get())
         ));
         // 注册【油漆染色】
         registration.addRecipeCategories(new MillPaintCategory(

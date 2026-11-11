@@ -1,5 +1,6 @@
 package com.momos.millenairejeim.helper;
 
+import com.momos.millenairejeim.config.MillJeiConfigManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,6 +39,7 @@ public final class MillenaireAPIHelper {
         // [醒目新注释] 重置底层 MillenaireDatabase 数据库映射单例
         MillenaireDatabase.clear();
         SafeReflectionHelper.clearCache();
+        MillJeiConfigManager.clearCache();
     }
 
     //Tag 基础标识与方法重载封装，自动规范小写路径并规避 Null 指针
@@ -102,6 +104,113 @@ public final class MillenaireAPIHelper {
         return ResourceLocation.fromNamespaceAndPath("millenaire", buildingId.toLowerCase(Locale.ROOT));
     }
     public static ResourceLocation getBuildingTag(BuildingPlanSet building) {return building == null ? null : getBuildingTag(building.buildingId());}
+
+    /**
+     * 获取建筑的完整有效标签列表（含顶层 {@code tags}、所有变体/等级 {@link BuildingPlan#tags()} 以及子建筑授予的 {@code parentTags}）。
+     */
+    public static List<String> getBuildingAllTags(BuildingPlanSet building) {
+        if (building == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        if (db != null && building.id() != null) {
+            return db.getBuildingAllTags(building.id());
+        }
+        return collectFallbackBuildingTags(building);
+    }
+
+    /**
+     * 判断指定建筑是否拥有目标运行时标签（大小写不敏感，覆盖顶层/变体/等级/子建筑授予 parentTags）。
+     */
+    public static boolean buildingHasTag(BuildingPlanSet building, String tag) {
+        if (building == null || tag == null || tag.isBlank()) return false;
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        if (db != null && building.id() != null) {
+            return db.buildingHasTag(building.id(), tag);
+        }
+        String needle = tag.trim();
+        for (String existing : collectFallbackBuildingTags(building)) {
+            if (needle.equalsIgnoreCase(existing)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 按建筑标签及可选附加 {@code requiredTag}、文化范围查询匹配的所有建筑计划集（按 ID 确定性排序）。
+     */
+    public static List<BuildingPlanSet> getBuildingsByTag(
+            String buildingTag,
+            String requiredTag,
+            Collection<ResourceLocation> cultureFilter
+    ) {
+        if (buildingTag == null || buildingTag.isBlank()) {
+            return List.of();
+        }
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        Collection<BuildingPlanSet> candidates = db != null
+                ? db.getBuildingsByTag(buildingTag)
+                : getAllBuildings();
+        if (candidates == null || candidates.isEmpty()) {
+            return List.of();
+        }
+        boolean hasCultureFilter = cultureFilter != null && !cultureFilter.isEmpty();
+        boolean hasRequiredTag = requiredTag != null && !requiredTag.isBlank();
+        List<BuildingPlanSet> result = new ArrayList<>();
+        for (BuildingPlanSet bps : candidates) {
+            if (bps == null) continue;
+            if (hasCultureFilter && (bps.culture() == null || !cultureFilter.contains(bps.culture()))) {
+                continue;
+            }
+            if (db == null && !buildingHasTag(bps, buildingTag)) {
+                continue;
+            }
+            if (hasRequiredTag && !buildingHasTag(bps, requiredTag)) {
+                continue;
+            }
+            result.add(bps);
+        }
+        result.sort(Comparator.comparing(b -> b.id() != null ? b.id().toString() : String.valueOf(b.buildingId())));
+        return result;
+    }
+
+    /**
+     * 获取指定父建筑直接关联的所有子建筑 {@link BuildingPlanSet} 列表（按 ID 排序）。
+     */
+    public static List<BuildingPlanSet> getBuildingSubBuildings(BuildingPlanSet building) {
+        if (building == null || building.id() == null) return List.of();
+        MillenaireDatabase db = MillenaireDatabase.getInstance();
+        return db != null ? db.getBuildingSubBuildings(building.id()) : List.of();
+    }
+
+    private static List<String> collectFallbackBuildingTags(BuildingPlanSet building) {
+        Map<String, String> tagMap = new LinkedHashMap<>();
+        if (building.tags() != null) {
+            for (String t : building.tags()) {
+                if (t != null && !t.isBlank()) {
+                    String trimmed = t.trim();
+                    tagMap.putIfAbsent(trimmed.toLowerCase(Locale.ROOT), trimmed);
+                }
+            }
+        }
+        if (building.variants() != null) {
+            for (List<BuildingPlanSet.LevelDef> levels : building.variants().values()) {
+                if (levels == null) continue;
+                for (BuildingPlanSet.LevelDef ld : levels) {
+                    if (ld == null || ld.planId() == null) continue;
+                    BuildingPlan plan = ModCultures.getBuildingPlan(ld.planId());
+                    if (plan != null && plan.tags() != null) {
+                        for (String t : plan.tags()) {
+                            if (t != null && !t.isBlank()) {
+                                String trimmed = t.trim();
+                                tagMap.putIfAbsent(trimmed.toLowerCase(Locale.ROOT), trimmed);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return tagMap.values().stream().sorted(String.CASE_INSENSITIVE_ORDER).toList();
+    }
 
     // 获得村民信息
     public static Map<ResourceLocation, VillagerType> getAllVillagerType() { return ModCultures.getAllVillagerTypes(); }

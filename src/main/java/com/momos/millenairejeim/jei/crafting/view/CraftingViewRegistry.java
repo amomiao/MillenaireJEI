@@ -13,6 +13,7 @@ public final class CraftingViewRegistry {
     private static final ICraftingLayoutView FALLBACK_VIEW = new DefaultCraftingLayoutView();
 
     static {
+        VIEWS.add(new ConfigGoalLayoutView());
         VIEWS.add(new EntityInteractionLayoutView());
         VIEWS.add(new HarvestLootLayoutView());
         VIEWS.add(new DefaultCraftingLayoutView());

@@ -1,15 +1,18 @@
 package com.momos.millenairejeim.jei.crafting.type;
 
+import com.momos.millenairejeim.config.GoalItemConfigSpec;
+import com.momos.millenairejeim.config.MillJeiConfigManager;
+import com.momos.millenairejeim.config.SpotGatheringConfigEntry;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.SafeReflectionHelper;
 import com.momos.millenairejeim.jei.MillenaireJeimKeys;
 import com.momos.millenairejeim.jei.crafting.type.base.MillCraftingBaseRecipe;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.VillagerType;
@@ -22,8 +25,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 对应千年 {@link SpotGatheringGoal}（Java 硬编码定点采集/处理 Goal）的 JEI 配方实体。
- * 覆盖蚕茧采集、蜗牛紫染料、泥砖收集、湿砖日光晒干、甘蔗种植与收割等。
+ * 对应千年 {@link SpotGatheringGoal}（定点采集/处理 Goal）的 JEI 配方实体。
+ * <p>输入、催化剂、产出与额外说明完全由 {@code config/millenairejeim/spot_gathering/*.json} 外部配置注入；
+ * 当自动化检测到未注入外部配置的新 {@link SpotGatheringGoal} 时，会输出双写告警日志并安全尝试按反射字段 {@code stockItem} 降级显示。</p>
  */
 public class GoalSpotRecipe extends MillCraftingBaseRecipe {
 
@@ -43,6 +47,7 @@ public class GoalSpotRecipe extends MillCraftingBaseRecipe {
         super(id, goalKey, "spot_gathering", inputs, outputs, catalysts, villagerTypes);
         this.buildingTag = buildingTag != null ? buildingTag : "";
         this.townhallLimit = townhallLimit;
+        setTagConstraints(this.buildingTag, null);
     }
 
     public String getBuildingTag() {
@@ -55,37 +60,35 @@ public class GoalSpotRecipe extends MillCraftingBaseRecipe {
 
     @Override
     public List<BuildingPlanSet> getAssociatedBuildingIds() {
-        List<BuildingPlanSet> buildings = new ArrayList<>(super.getAssociatedBuildingIds());
-        if (buildingTag.isEmpty()) {
-            return buildings;
-        }
-        Collection<BuildingPlanSet> allBuildings = MillenaireAPIHelper.getAllBuildings();
-        if (allBuildings == null || allBuildings.isEmpty()) {
-            return buildings;
-        }
+        return super.getAssociatedBuildingIds();
+    }
 
-        Set<ResourceLocation> villagerCultures = new LinkedHashSet<>();
-        for (VillagerType vt : getVillagerTypes()) {
-            if (vt != null && vt.culture() != null) {
-                villagerCultures.add(vt.culture());
+    /** 按村民关联建筑与指定建筑标签解析并汇总建筑集合（同步服务 {@link GoalConfigRecipe}）。*/
+    public static List<BuildingPlanSet> resolveBuildingsWithTag(
+            List<BuildingPlanSet> baseBuildings,
+            List<VillagerType> villagerTypes,
+            @Nullable String buildingTag
+    ) {
+        Set<BuildingPlanSet> merged = new LinkedHashSet<>(baseBuildings != null ? baseBuildings : List.of());
+        if (buildingTag != null && !buildingTag.isBlank()) {
+            Set<ResourceLocation> villagerCultures = new LinkedHashSet<>();
+            if (villagerTypes != null) {
+                for (VillagerType vt : villagerTypes) {
+                    if (vt != null && vt.culture() != null) {
+                        villagerCultures.add(vt.culture());
+                    }
+                }
             }
+            merged.addAll(MillenaireAPIHelper.getBuildingsByTag(buildingTag, null, villagerCultures));
         }
-
-        for (BuildingPlanSet bps : allBuildings) {
-            if (bps == null || bps.tags() == null) continue;
-            if (!villagerCultures.isEmpty() && (bps.culture() == null || !villagerCultures.contains(bps.culture()))) {
-                continue;
-            }
-            boolean hasTag = bps.tags().stream().anyMatch(tag -> buildingTag.equalsIgnoreCase(tag));
-            if (hasTag && !buildings.contains(bps)) {
-                buildings.add(bps);
-            }
-        }
-        return buildings;
+        return merged.stream()
+                .filter(java.util.Objects::nonNull)
+                .sorted(java.util.Comparator.comparing(b -> b.id() != null ? b.id().toString() : String.valueOf(b.buildingId())))
+                .toList();
     }
 
     /**
-     * 安全从 {@link SpotGatheringGoal} 实例提取 JEI 配方，所有私有字段均通过 {@link SafeReflectionHelper} 读取。
+     * 安全结合 {@link SpotGatheringGoal} 运行时反射字段与 {@code spot_gathering/} 外部配置创建 JEI 配方。
      */
     @Nullable
     public static GoalSpotRecipe create(ResourceLocation goalId, SpotGatheringGoal spotGoal, List<VillagerType> villagers) {
@@ -97,90 +100,101 @@ public class GoalSpotRecipe extends MillCraftingBaseRecipe {
         Item stockItem = SafeReflectionHelper.readSupplierField(spotGoal, "stockItem", Item.class);
         int townhallLimit = SafeReflectionHelper.readIntField(spotGoal, "townhallLimit", 0);
 
+        SpotGatheringConfigEntry config = MillJeiConfigManager.findSpotConfig(goalId);
         List<IngredientWithCount> inputs = new ArrayList<>();
         List<ItemStack> outputs = new ArrayList<>();
         List<ItemStack> catalysts = new ArrayList<>();
 
         Component extraLine = null;
-        List<Component> extraTooltip = null;
-        Component plantTip = null;
+        List<Component> extraTooltip = List.of();
+        List<Component> sharedOutputTooltips = List.of();
 
-        String goalKey = goalId.getPath();
-        switch (goalKey) {
-            case "gather_silk" -> {
-                addResolvedInput("millenaire:silk_worm", inputs);
-                Item out = resolveWithFallback(stockItem, "millenaire:silk");
-                if (out != Items.AIR) outputs.add(new ItemStack(out));
-                extraLine = Component.translatableWithFallback(
-                        MillenaireJeimKeys.KEY_INFO_RIPE_STAGE, MillenaireJeimKeys.FALLBACK_INFO_RIPE_STAGE, 3
-                );
+        if (config == null) {
+            String stockKey = (stockItem != null && stockItem != Items.AIR)
+                    ? BuiltInRegistries.ITEM.getKey(stockItem).toString()
+                    : "none";
+            MillJeiConfigManager.warnUninjectedSpotGoal(goalId, stockKey, buildingTag, townhallLimit);
+            if (stockItem != null && stockItem != Items.AIR) {
+                outputs.add(new ItemStack(stockItem));
             }
-            case "gather_snails" -> {
-                addResolvedInput("millenaire:snail_soil", inputs);
-                Item out = resolveWithFallback(stockItem, "minecraft:purple_dye");
-                if (out != Items.AIR) outputs.add(new ItemStack(out));
-                extraLine = Component.translatableWithFallback(
-                        MillenaireJeimKeys.KEY_INFO_RIPE_STAGE, MillenaireJeimKeys.FALLBACK_INFO_RIPE_STAGE, 3
-                );
+        } else {
+            if (!config.isEnabled()) {
+                return null;
             }
-            case "gather_brick" -> {
-                Item mudBrick = resolveWithFallback(stockItem, "millenaire:mud_brick");
-                if (mudBrick != Items.AIR) {
-                    catalysts.add(new ItemStack(mudBrick));
-                    outputs.add(new ItemStack(mudBrick));
+            String sourceFile = config.sourceFile != null ? config.sourceFile : "spot_gathering";
+            if (config.inputs != null) {
+                for (GoalItemConfigSpec spec : config.inputs) {
+                    if (spec == null) continue;
+                    IngredientWithCount ing = spec.toIngredientWithCount(sourceFile);
+                    if (ing != null) {
+                        inputs.add(ing);
+                    }
                 }
             }
-            case "dry_brick" -> {
-                addResolvedInput("millenaire:wet_brick", inputs);
-                Item mudBrick = resolveWithFallback(stockItem, "millenaire:mud_brick");
-                if (mudBrick != Items.AIR) outputs.add(new ItemStack(mudBrick));
-                extraLine = Component.translatableWithFallback(
-                        MillenaireJeimKeys.KEY_INFO_SPOT_SUN_DRY, MillenaireJeimKeys.FALLBACK_INFO_SPOT_SUN_DRY
-                );
-                extraTooltip = List.of(Component.translatableWithFallback(
-                        MillenaireJeimKeys.KEY_TOOLTIP_SPOT_SUN_DRY, MillenaireJeimKeys.FALLBACK_TOOLTIP_SPOT_SUN_DRY
-                ));
-            }
-            case "harvest_sugar_cane" -> {
-                addResolvedInput("minecraft:sugar_cane", inputs);
-                Item cane = resolveWithFallback(stockItem, "minecraft:sugar_cane");
-                if (cane != Items.AIR) outputs.add(new ItemStack(cane));
-            }
-            case "plant_sugar_cane" -> {
-                addResolvedInput("minecraft:sugar_cane", inputs);
-                outputs.add(new ItemStack(Items.SUGAR_CANE));
-                extraLine = Component.translatableWithFallback(
-                        MillenaireJeimKeys.KEY_INFO_SPOT_PLANT, MillenaireJeimKeys.FALLBACK_INFO_SPOT_PLANT
-                );
-                plantTip = Component.translatableWithFallback(
-                        MillenaireJeimKeys.KEY_TOOLTIP_SPOT_PLANT, MillenaireJeimKeys.FALLBACK_TOOLTIP_SPOT_PLANT
-                );
-                extraTooltip = List.of(plantTip);
-            }
-            default -> {
-                if (stockItem != null && stockItem != Items.AIR) {
-                    outputs.add(new ItemStack(stockItem));
+            if (config.catalysts != null) {
+                for (GoalItemConfigSpec spec : config.catalysts) {
+                    if (spec == null) continue;
+                    ItemStack stack = spec.toItemStack(sourceFile);
+                    if (!stack.isEmpty()) {
+                        catalysts.add(stack);
+                    }
                 }
             }
+            if (config.outputs != null) {
+                for (GoalItemConfigSpec spec : config.outputs) {
+                    if (spec == null) continue;
+                    ItemStack stack = spec.toItemStack(sourceFile);
+                    if (!stack.isEmpty()) {
+                        outputs.add(stack);
+                    }
+                }
+            }
+            if (outputs.isEmpty() && config.shouldUseReflectedStockItemFallback()
+                    && stockItem != null && stockItem != Items.AIR) {
+                outputs.add(new ItemStack(stockItem));
+            }
+            if (config.buildingTagOverride != null && !config.buildingTagOverride.isBlank()) {
+                buildingTag = config.buildingTagOverride.trim();
+            }
+            if (config.townhallLimitOverride != null) {
+                townhallLimit = config.townhallLimitOverride;
+            }
+            if ((config.extraInfoKey != null && !config.extraInfoKey.isBlank())
+                    || (config.extraInfoText != null && !config.extraInfoText.isBlank())) {
+                extraLine = MillJeiConfigManager.resolveComponent(config.extraInfoKey, config.extraInfoText, config.extraInfoArgs);
+            }
+            extraTooltip = MillJeiConfigManager.resolveComponentList(config.extraTooltipKeys, config.extraTooltips);
+            sharedOutputTooltips = MillJeiConfigManager.resolveComponentList(config.outputTooltipKeys, config.outputTooltips);
         }
 
         if (inputs.isEmpty() && catalysts.isEmpty() && outputs.isEmpty()) {
             return null;
         }
 
+        String goalKey = goalId.getPath();
         GoalSpotRecipe recipe = new GoalSpotRecipe(
                 goalId, goalKey, inputs, outputs, catalysts, villagers, buildingTag, townhallLimit
         );
 
         if (extraLine != null) {
-            recipe.setExtraInfo(extraLine, extraTooltip);
+            recipe.setExtraInfo(extraLine, extraTooltip.isEmpty() ? null : extraTooltip);
         }
-        if (plantTip != null) {
-            recipe.addOutputTooltip(Items.SUGAR_CANE, plantTip);
+        if (config != null && config.outputs != null) {
+            String sourceFile = config.sourceFile != null ? config.sourceFile : "spot_gathering";
+            for (GoalItemConfigSpec spec : config.outputs) {
+                if (spec == null) continue;
+                ItemStack stack = spec.toItemStack(sourceFile);
+                if (!stack.isEmpty()) {
+                    List<Component> itemTips = spec.buildTooltips();
+                    if (!itemTips.isEmpty()) {
+                        recipe.addOutputTooltips(stack.getItem(), itemTips);
+                    }
+                }
+            }
         }
-        if ("dry_brick".equals(goalKey) && extraTooltip != null) {
+        if (!sharedOutputTooltips.isEmpty()) {
             for (ItemStack out : outputs) {
-                recipe.addOutputTooltips(out.getItem(), extraTooltip);
+                recipe.addOutputTooltips(out.getItem(), sharedOutputTooltips);
             }
         }
         if (townhallLimit > 0) {
@@ -194,20 +208,5 @@ public class GoalSpotRecipe extends MillCraftingBaseRecipe {
             }
         }
         return recipe;
-    }
-
-    private static void addResolvedInput(String itemId, List<IngredientWithCount> inputs) {
-        Item item = MillenaireAPIHelper.resolveItem(itemId);
-        if (item != null && item != Items.AIR) {
-            inputs.add(new IngredientWithCount(Ingredient.of(item), 1));
-        }
-    }
-
-    private static Item resolveWithFallback(@Nullable Item preferred, String fallbackId) {
-        if (preferred != null && preferred != Items.AIR) {
-            return preferred;
-        }
-        Item resolved = MillenaireAPIHelper.resolveItem(fallbackId);
-        return resolved != null ? resolved : Items.AIR;
     }
 }
